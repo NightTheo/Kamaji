@@ -35,7 +35,8 @@ create table ROOM(
 
   name VARCHAR(64),
   max_capacity INT,
-  price_half_day INT,
+  price_half_day INT,,
+  state BOOLEAN DEFAULT 1
 
   place INT UNIQUE NOT NULL,
   FOREIGN KEY (place) REFERENCES PLACE(id)
