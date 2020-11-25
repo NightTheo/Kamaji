@@ -15,11 +15,13 @@
 *   2i2
 *__________________________
 *
-*   database: kamajiv1
+*   database: kamajiv2
 *
 */
 
 
+create database kamajiv2;
+use kamajiv2;
 
 create table PLACE(
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -35,8 +37,8 @@ create table ROOM(
 
   name VARCHAR(64),
   max_capacity INT,
-  price_half_day INT,,
-  state BOOLEAN DEFAULT 1
+  price_half_day INT,
+  state BOOLEAN DEFAULT 1,
 
   place INT UNIQUE NOT NULL,
   FOREIGN KEY (place) REFERENCES PLACE(id)

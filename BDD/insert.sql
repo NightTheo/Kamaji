@@ -9,7 +9,7 @@ INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (1,'A12',6,19
 INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (2,'Salle 2',4,15,2);
 INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (3,'Salle 3',8,14,3);
 
-INSERT INTO BOOKING(id,nb_persons,price,date_booking,time_slot,state,room) VALUES(1,6,25,'2020/12/10','14h - 20h',1,1);
+INSERT INTO BOOKING(id,nb_persons,price,date_booking,time_slot,state,room) VALUES(1,6,25,'2020-11-24','14h - 20h',1,1);
 
 INSERT INTO DRINK(id,name,category) VALUES(1,'café','boisson chaude');
 INSERT INTO DRINK(id,name,category) VALUES(2,'thé','boisson froide');
