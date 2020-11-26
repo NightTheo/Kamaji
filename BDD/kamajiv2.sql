@@ -40,7 +40,7 @@ create table ROOM(
   price_half_day INT,
   state BOOLEAN DEFAULT 1,
 
-  place INT UNIQUE NOT NULL,
+  place INT NOT NULL,
   FOREIGN KEY (place) REFERENCES PLACE(id)
 );
 
