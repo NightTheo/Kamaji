@@ -32,15 +32,9 @@ int main(int argc, char **argv){
   gtk_init(&argc, &argv);
 
   builder = gtk_builder_new();
-  gtk_builder_add_from_file (builder, "glade/home.glade", NULL);
+  gtk_builder_add_from_file (builder, "ui/glade/home.glade", NULL);
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window_home"));
-  if (window == NULL){
-    /* Print out the error. You can use GLib's message logging  */
-    fprintf(stderr, "Unable to file object with id \"window_home\" \n");
-    //exit(1);
-    /* Your error handling code goes here */
-  }
   gtk_builder_connect_signals(builder, NULL);
 
   g_object_unref(builder);
