@@ -1,0 +1,87 @@
+
+
+//Accueil > Calendriers
+SELECT id,name FROM PLACE WHERE state = 1;
+SELECT id,name FROM ROOM WHERE state = 1 AND place = ?;
+
+
+//Acceuil > Calendriers > planning salle
+SELECT name,max_capacity,price_half_day FROM ROOM where id = ?;
+
+SELECT roe.equipment FROM _room_owns_equipment as roe
+INNER JOIN EQUIPMENT as E ON roe.equipment = E.id
+WHERE room = 1 AND E.state = 1;
+
+SELECT date_booking,time_slot FROM BOOKING WHERE room = x AND date_booking >= y AND date_booking <= DATE_ADD(y, INTERVAL 5 DAY);
+
+
+//Accueil > Recherche > New res
+SELECT id,name FROM PLACE WHERE state = 1;
+
+
+//Accueil > Recherche > new res > boisson
+SELECT ppd.drink FROM _place_propose_drink AS ppd
+INNER JOIN DRINK ON ppd.drink = DRINK.id
+WHERE place = ?
+
+
+//Accueil > Recherche > new res > boisson > matériel
+SELECT equipment FROM _room_owns_equipment as roe
+INNER JOIN ROOM ON roe.room = ROOM.id
+INNER JOIN EQUIPMENT ON roe.equipment = EQUIPMENT.id
+WHERE EQUIPMENT.state = 1 AND ROOM.place = ?;
+
+
+//Accueil > Recherche > new res > boisson > matériel > salles dispo
+SELECT map FROM PLACE WHERE id = ?;
+
+SELECT A.* FROM (
+	SELECT R.id, R.name as room_name, P.name as place_name, R.max_capacity, R.price_half_day
+    FROM ROOM as R
+    INNER JOIN PLACE as P ON R.place = P.id
+    WHERE R.max_capacity >= 3
+    AND R.place = 1
+    AND R.state = 1
+) as A
+LEFT JOIN (
+    SELECT B.room FROM BOOKING AS B
+    INNER JOIN ROOM as R ON B.room = R.id
+    WHERE R.place = 1
+    AND B.date_booking = '2020-11-24'
+    AND ( B.time_slot = '8h - 20h' OR B.time_slot = '8h - 14h')
+    AND B.state = 1
+) as B
+ON A.id = B.room
+WHERE B.room IS NULL;
+
+/*booléen : renvoie 1 si une salle est réservé l'après-midi du 23 nov 2020*/
+SELECT IF(
+	(SELECT COUNT(time_slot) FROM BOOKING
+	WHERE room = 1
+	AND date_booking = '2020-11-23'
+	AND time_slot = '14h - 20h'
+	AND state = 1) > 0, 1, 0
+) AS Q
+
+
+SELECT roe.equipment FROM _room_owns_equipment as roe
+INNER JOIN EQUIPMENT as E ON roe.equipment = E.id
+WHERE E.state = 1 AND room = 1 ;
+
+
+//Accueil > Réservations
+SELECT B.id, R.id R.name, P.name, B.nb_persons, B.price, B.date_booking, B.time_slot
+FROM BOOKING as B
+INNER JOIN ROOM as R ON B.room = R.id
+INNER JOIN PLACE as P ON R.place = P.id
+WHERE B.state = 1 AND R.state = 1 AND P.state = 1
+
+SELECT drink FROM _booking_include_drink
+INNER JOIN BOOKING as B WHERE B.state = 1 AND B.id = ?
+
+SELECT equipment FROM _room_owns_equipment WHERE room = ? 
+
+
+
+
+
