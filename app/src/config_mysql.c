@@ -4,7 +4,8 @@ _________________
 Théo OMNES
 Yanis TAGRI
 _________________
-08 nov 2020
+last change:
+29 nov 2020
 */
 
 #include <mysql/mysql.h>
@@ -18,7 +19,7 @@ MYSQL* connect_db(){
   char *server = "localhost";
   char *user = "root";
   char *password = "";
-  char *database = "test_libc";
+  char *database = "kamajiv2";
 
   conn = mysql_init(NULL);
 
@@ -32,26 +33,21 @@ MYSQL* connect_db(){
 }
 
 /*__________________________________*/
-//close_db
-void close_db(MYSQL *conn){
-  mysql_close(conn);
-}
-
-/*__________________________________*/
 //querry
-MYSQL_RES* query(MYSQL *conn, const char * q ){
-  if (mysql_query(conn, q)) {
+MYSQL_RES* query(MYSQL *conn, const char * request ){
+  if (mysql_query(conn, request)) {
      fprintf(stderr, "%s\n", mysql_error(conn));
      exit(1);
   }
-
   return mysql_use_result(conn);
 }
 /*__________________________________*/
 //print_res
-void print_res(MYSQL_RES *res, MYSQL_ROW row){
-  while ((row = mysql_fetch_row(res)) != NULL)
+void print_result(MYSQL_RES *result){
+  MYSQL_ROW row;
+  while ((row = mysql_fetch_row(result)) != NULL)
      printf("%s \n", row[0]);
+  mysql_free_result(result);
 }
 /*__________________________________*/
 
