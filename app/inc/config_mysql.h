@@ -4,10 +4,10 @@ _________________
 Théo OMNES
 Yanis TAGRI
 _________________
-08 nov 2020
+last change:
+29 nov 2020
 */
 
 MYSQL *connect_db();
-void close_db(MYSQL *conn);
-MYSQL_RES* query(MYSQL *conn, const char * q );
-void print_res(MYSQL_RES *res, MYSQL_ROW row);
+MYSQL_RES* query(MYSQL *conn, const char * request );
+void print_result(MYSQL_RES *result);
