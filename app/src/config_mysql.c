@@ -27,7 +27,7 @@ MYSQL* connect_db(){
   if (!mysql_real_connect(conn, server,
       user, password, database, 8889, NULL, 0)) {
      fprintf(stderr, "%s\n", mysql_error(conn));
-     exit(1);
+     exit(1); //error
   }
   return conn;
 }
@@ -37,7 +37,7 @@ MYSQL* connect_db(){
 MYSQL_RES* query(MYSQL *conn, const char * request ){
   if (mysql_query(conn, request)) {
      fprintf(stderr, "%s\n", mysql_error(conn));
-     exit(1);
+     exit(1);  //error 
   }
   return mysql_use_result(conn);
 }
