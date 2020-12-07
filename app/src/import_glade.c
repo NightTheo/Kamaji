@@ -13,68 +13,63 @@ last modif: 30 nov 2020
 //defines
 #define GLADE_FILE "ui/glade/home.glade"
 
+/*
+function: on_window_main_destroy
+*/
+void on_window_main_destroy(){
+    gtk_main_quit();
+}
+
 
 /*
 function: homekamaji
 Open Window_home
 */
 void open_home_window(char *idWindow){
+    GtkBuilder      *builder;
+    GtkWidget       *window;
 
-    Window window = newWindow(GLADE_FILE, idWindow);
-    gtk_widget_show_all(*window.window);
-/*
-    click_button(window, "button_home_reservations", open_reservations_window);
-    click_button(window, "button_home_search", open_new_res_window);
-    click_button(window, "button_home_calendars", open_place_room_window);
-*/
+    builder = gtk_builder_new();
+    gtk_builder_add_from_file (builder,GLADE_FILE, NULL);
+    window = GTK_WIDGET(gtk_builder_get_object(builder, idWindow));
+    gtk_builder_connect_signals(builder, NULL);
+
+    click_button(builder, window, "button_home_reservations", &open_reservations_window);
+    click_button(builder, window, "button_home_search", &open_new_res_window);
+    click_button(builder, window, "button_home_calendars", &open_place_room_window);
+
+    g_object_unref(builder);
+    gtk_widget_show(window);
+
 
     gtk_main();
 
 }
 
-
-
 /*
 click_button
 */
-void click_button(Window window, char *idButton, void (*pf)){
+void click_button(GtkBuilder *builder, GtkWidget *window, char *idButton, void (*pf)){
   GtkWidget *button;
-  button = GTK_WIDGET(gtk_builder_get_object(window->builder, idButton));
-  g_signal_connect (button,"clicked",G_CALLBACK(pf), &window);
-
+  button = GTK_WIDGET(gtk_builder_get_object(builder, idButton));
+  g_signal_connect (button,"clicked",G_CALLBACK(pf),window);
 }
 
 /*
 close_and_open_window
 */
-Window close_and_open_window(Window oldWindow, char *idNewWindow){
-  gtk_widget_destroy(*oldWindow.window);
-  return newWindow(GLADE_FILE, idNewWindow);
-}
-
-/*
-newWindow
-*/
-Window newWindow(char *file, char *idNewWindow){
-  GtkWidget       *window;
+GtkBuilder *close_and_open_window(GtkWidget *oldWindow, char *idNewWindow){
   GtkBuilder      *builder;
+  gtk_widget_destroy(oldWindow);
 
-  builder = gtk_builder_new_from_file(file);
-  window = GTK_WIDGET(gtk_builder_get_object(builder, idNewWindow));
+  builder = gtk_builder_new();
+  gtk_builder_add_from_file (builder,GLADE_FILE, NULL);
+  oldWindow = GTK_WIDGET(gtk_builder_get_object(builder, idNewWindow));
   gtk_builder_connect_signals(builder, NULL);
-  g_signal_connect(window, "delete-event", G_CALLBACK(gtk_main_quit), NULL );
 
-  Window windowStruct = {&window, &builder};
-  //Window *ptr = &windowStruct;
-
-  //gtk_widget_show_all(window);
-  return windowStruct;
+  gtk_widget_show(oldWindow);
+  return builder;
 }
-
-
-
-
-
 
 
 //###################
@@ -84,32 +79,30 @@ Window newWindow(char *file, char *idNewWindow){
 function: open_new_res_window
 Open window_new_reservation
 */
-
-void open_reservations_window(GtkWidget *widget, gpointer window){
-  close_and_open_window(*window,"window_reservations");
+void open_reservations_window(GtkWidget *Widget,GtkWidget *currentWindow){
+  close_and_open_window(currentWindow,"window_reservations");
 }
 
-void open_new_res_window(GtkWidget *widget, gpointer window){
-  Window newWindow;
-  newWindow = close_and_open_window(*window,"window_new_reservation");
-  //click_button(newWindow, "button_new_res", open_equipment_window);
-
+void open_new_res_window(GtkWidget *Widget,GtkWidget *currentWindow){
+  GtkBuilder *builder;
+  builder = close_and_open_window(currentWindow,"window_new_reservation");
+  click_button(builder, currentWindow, "button_new_res", &open_equipment_window);
+  g_object_unref(builder);
 }
 
-void open_place_room_window(GtkWidget *widget, gpointer window){
-  Window newWindow;
-  newWindow = close_and_open_window(*window,"window_place_room");
-  click_button(newWindow, "button_place_room", &open_planning_window);
+void open_place_room_window(GtkWidget *Widget,GtkWidget *currentWindow){
+  GtkBuilder *builder;
+  builder = close_and_open_window(currentWindow,"window_place_room");
+  click_button(builder, currentWindow, "button_place_room", &open_planning_window);
+  g_object_unref(builder);
 }
 
-void open_equipment_window(GtkWidget *widget, gpointer window){
-  Window newWindow;
-  newWindow = close_and_open_window(*window,"window_equipment");
+void open_equipment_window(GtkWidget *Widget,GtkWidget *currentWindow){
+    close_and_open_window(currentWindow,"window_equipment");
 }
 
-void open_planning_window(GtkWidget *widget, gpointer window){
-  Window newWindow;
-  newWindow = close_and_open_window(*window,"window_planning");
+void open_planning_window(GtkWidget *Widget,GtkWidget *currentWindow){
+    close_and_open_window(currentWindow,"window_planning");
 }
 
 

@@ -277,7 +277,6 @@
     <property name="height-request">580</property>
     <property name="can-focus">False</property>
     <property name="resizable">False</property>
-    <property name="window-position">center</property>
     <child>
       <object class="GtkBox" id="box_reservations">
         <property name="visible">True</property>
