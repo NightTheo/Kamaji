@@ -29,7 +29,7 @@ int main(int argc, char **argv){
   //GTK
   gtk_init(&argc, &argv);
   open_home_window("window_home");
-
+  gtk_main();
 }
 //################################################################
 
