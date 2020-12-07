@@ -4,20 +4,28 @@ import_glade.h
 last modif: 30 nov 2020
 */
 
+typedef struct Window{
+  GtkWidget   **window;
+  GtkBuilder  **builder;
+} Window;
+
+
 void open_home_window(char *idWindow);
 
-GtkBuilder *close_and_open_window(GtkWidget *oldWindow, char *idNewWindow);
+void click_button(Window window, char *idButton,void (*pf));
+Window close_and_open_window(Window oldWindow, char *idNewWindow);
+Window newWindow(char *file, char *idNewWindow);
 
-void open_reservations_window(GtkWidget *Widget,GtkWidget *currentWindow);
-void open_new_res_window(GtkWidget *Widget,GtkWidget *currentWindow);
-void open_place_room_window(GtkWidget *Widget,GtkWidget *currentWindow);
-void open_equipment_window(GtkWidget *Widget,GtkWidget *currentWindow);
-void open_planning_window(GtkWidget *Widget,GtkWidget *currentWindow);
+//open windows
+void open_reservations_window(GtkWidget *widget, gpointer window);
+void open_new_res_window(GtkWidget *widget, gpointer window);
+void open_place_room_window(GtkWidget *widget, gpointer window);
+void open_equipment_window(GtkWidget *widget, gpointer window);
+void open_planning_window(GtkWidget *widget, gpointer window);
 
 void on_window_main_destroy();
 void on_window_new_booking_destroy();
 
-void click_button(GtkBuilder *builder, GtkWidget *window, char *idButton,void (*pf));
 
 
 
