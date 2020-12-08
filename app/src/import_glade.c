@@ -4,7 +4,7 @@ import_glade.c
 create the windows from the file glade in ui/glade/home.glade
 connet the signals for the navigation between the windows
 
-last modif: 30 nov 2020
+last modif: 07 dec 2020
 */
 
 #include <gtk/gtk.h>
