@@ -59,10 +59,24 @@ GtkBuilder *newWindow(char* file, char* idWindow){
   gtk_builder_connect_signals(builder, NULL);
   g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(gtk_main_quit), NULL);
 
+  //Background color
+  background_color(&window, "#444444" );
+
+
   gtk_widget_show(window);
   return builder;
 }
 
+void background_color( GtkWidget **widget, char *color ){
+  GtkCssProvider * cssProvider = gtk_css_provider_new();    //store the css
+
+  char css[64] = "* { background-image:none; background-color:";
+  strcat( strcat( css , color ), ";}" );
+
+  gtk_css_provider_load_from_data(cssProvider, css,-1,NULL);
+  GtkStyleContext * context = gtk_widget_get_style_context(*widget);   //manage CSS provider
+  gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(cssProvider),GTK_STYLE_PROVIDER_PRIORITY_USER);
+}
 
 //##### NAVIGATION ####################################################
 
