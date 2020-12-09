@@ -4,11 +4,12 @@ import_glade.c
 create the windows from the file glade in ui/glade/home.glade
 connet the signals for the navigation between the windows
 
-last modif: 07 dec 2020
+last modif: 08 décembre 2020
 */
 
 #include <gtk/gtk.h>
 #include "../inc/import_glade.h"
+#include "../inc/RetrieveDataFromInput.h"
 
 //defines
 #define GLADE_FILE "ui/glade/home.glade"
@@ -42,7 +43,7 @@ close_and_open_window
 */
 GtkBuilder *close_and_open_window(GtkBuilder *builder, char *idOldWindow, char *idNewWindow){
   gtk_widget_destroy( GTK_WIDGET(gtk_builder_get_object(builder, idOldWindow)) );
-   g_object_unref(G_OBJECT(builder));
+  g_object_unref(G_OBJECT(builder));
   return newWindow(GLADE_FILE, idNewWindow);
 }
 
@@ -90,7 +91,32 @@ void open_reservations_window(GtkWidget *widget,gpointer builder){
 
 void open_new_res_window(GtkWidget *widget,gpointer builder){
   GtkBuilder *newBuilder;
+  GtkComboBox *inputplace;
+  GtkComboBox *inputTime;
+  GtkSpinButton *inputNbPeoples;
+  GtkCalendar *date;
   newBuilder = close_and_open_window(builder,"window_home", "window_new_reservation");
+
+  //liste déroulante pour le lieu séléctionner de la réservation
+  inputplace = GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_new_reservation_where"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect(inputplace,"changed",G_CALLBACK(retrieveDataCBox),inputplace);
+
+  //liste déroulante pour le temps passé dans une salle
+  inputTime= GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_new_reservation_when"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect(inputTime,"changed",G_CALLBACK(retrieveDataCBox),inputTime);
+
+  //liste déroulante pour le nombre de personne saisi
+  inputNbPeoples = GTK_SPIN_BUTTON(gtk_builder_get_object(newBuilder, "spin_new_reservation_group"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect(inputNbPeoples,"changed",G_CALLBACK(retrieveDataSpin),inputNbPeoples);
+
+  //Calendrier Take Date
+  date = GTK_CALENDAR(gtk_builder_get_object(newBuilder, "calendar_new_res"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect(date,"day-selected",G_CALLBACK(retrieveDataCalendar),date);
+
   click_button(newBuilder, "button_new_res", open_equipment_window);
 }
 

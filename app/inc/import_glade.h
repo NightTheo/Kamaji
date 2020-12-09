@@ -1,7 +1,7 @@
 /*
 import_glade.h
 
-last modif: 30 nov 2020
+last modif: 08 décembre 2020
 */
 
 void open_home_window(char *idWindow);
@@ -24,7 +24,6 @@ void open_reservations_window2(GtkWidget *widget,gpointer builder);
 
 void on_window_main_destroy();
 void on_window_new_booking_destroy();
-
 
 
 
