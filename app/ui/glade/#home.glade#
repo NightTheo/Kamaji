@@ -2,19 +2,228 @@
 <!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkAdjustment" id="adjustement_spi">
-    <property name="lower">1</property>
-    <property name="upper">30</property>
-    <property name="value">1</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkAdjustment" id="adjustement_spin">
     <property name="lower">1</property>
     <property name="upper">30</property>
     <property name="value">1</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
+  </object>
+  <object class="GtkWindow" id="window_new_reservation">
+    <property name="width_request">870</property>
+    <property name="height_request">580</property>
+    <property name="can_focus">False</property>
+    <property name="resizable">False</property>
+    <property name="window_position">center</property>
+    <property name="default_width">870</property>
+    <property name="default_height">580</property>
+    <child>
+      <object class="GtkBox" id="box_new_reservation">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+        <property name="spacing">56</property>
+        <child>
+          <object class="GtkBox" id="box_new_reservation_left">
+            <property name="height_request">392</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="valign">center</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">74</property>
+            <child>
+              <object class="GtkBox" id="box_new_reservation_content">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">28</property>
+                <child>
+                  <object class="GtkBox" id="box_new_reservation_place">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="spacing">35</property>
+                    <child>
+                      <object class="GtkImage" id="img_new_reservation_tool">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="pixbuf">../img/icons/new_res/tool_white_new_res.png</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBoxText" id="combo_new_reservation_where">
+                        <property name="width_request">252</property>
+                        <property name="height_request">42</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">center</property>
+                        <property name="active">0</property>
+                        <property name="active_id">1</property>
+                        <items>
+                          <item id="0" translatable="yes">Choisir un lieu</item>
+                          <item id="1" translatable="yes">ESGI</item>
+                          <item id="2" translatable="yes">PPA</item>
+                          <item id="3" translatable="yes">ICAN</item>
+                        </items>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="box_new_reservation_group">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="spacing">64</property>
+                    <child>
+                      <object class="GtkImage" id="img_new_reservation_group">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="pixbuf">../img/icons/new_res/group.png</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="box_new_reservation_group_spin_lbl">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">center</property>
+                        <property name="spacing">20</property>
+                        <child>
+                          <object class="GtkSpinButton" id="spinButton">
+                            <property name="height_request">50</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="adjustment">adjustement_spin</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="lbl_new_reservation_group">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">personnes</property>
+                            <attributes>
+                              <attribute name="font-desc" value="Sawasdee 14"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="combo_new_reservation_when">
+                    <property name="width_request">352</property>
+                    <property name="height_request">66</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="active_id">0</property>
+                    <items>
+                      <item id="0" translatable="yes">Matin</item>
+                      <item id="1" translatable="yes">Après-midi</item>
+                      <item id="2" translatable="yes">Journée</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_new_res">
+                <property name="label" translatable="yes">Valider</property>
+                <property name="width_request">252</property>
+                <property name="height_request">42</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="halign">center</property>
+                <property name="hexpand">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCalendar" id="calendar_new_res">
+            <property name="width_request">346</property>
+            <property name="height_request">392</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="year">2020</property>
+            <property name="month">10</property>
+            <property name="day">22</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkDialog" id="dialog_delete_reservation">
     <property name="can_focus">False</property>
@@ -283,11 +492,11 @@
     <property name="pixbuf">../img/icons/reservations/pen.png</property>
   </object>
   <object class="GtkWindow" id="window_reservations">
-    <property name="width-request">870</property>
-    <property name="height-request">580</property>
-    <property name="can-focus">False</property>
+    <property name="width_request">870</property>
+    <property name="height_request">580</property>
+    <property name="can_focus">False</property>
     <property name="resizable">False</property>
-    <property name="window-position">center</property>
+    <property name="window_position">center</property>
     <child>
       <object class="GtkBox" id="box_reservations">
         <property name="visible">True</property>
@@ -1267,229 +1476,6 @@
     </child>
     <child type="titlebar">
       <placeholder/>
-    </child>
-  </object>
-  <object class="GtkAdjustment" id="spinAdjustement">
-    <property name="lower">1</property>
-    <property name="upper">30</property>
-    <property name="value">1</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
-  <object class="GtkWindow" id="window_new_reservation">
-    <property name="width-request">870</property>
-    <property name="height-request">580</property>
-    <property name="can-focus">False</property>
-    <property name="resizable">False</property>
-    <property name="window-position">center</property>
-    <property name="default-width">870</property>
-    <property name="default-height">580</property>
-    <child>
-      <object class="GtkBox" id="box_new_reservation">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">center</property>
-        <property name="valign">center</property>
-        <property name="spacing">56</property>
-        <child>
-          <object class="GtkBox" id="box_new_reservation_left">
-            <property name="height-request">392</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="valign">center</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">74</property>
-            <child>
-              <object class="GtkBox" id="box_new_reservation_content">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">28</property>
-                <child>
-                  <object class="GtkBox" id="box_new_reservation_place">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="spacing">35</property>
-                    <child>
-                      <object class="GtkImage" id="img_new_reservation_tool">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="pixbuf">../img/icons/new_res/tool_white_new_res.png</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkComboBoxText" id="combo_new_reservation_where">
-                        <property name="width-request">252</property>
-                        <property name="height-request">42</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="valign">center</property>
-                        <property name="active">0</property>
-                        <property name="active-id">1</property>
-                        <items>
-                          <item id="0" translatable="yes">Choisir un lieu</item>
-                          <item id="1" translatable="yes">ESGI</item>
-                          <item id="2" translatable="yes">PPA</item>
-                          <item id="3" translatable="yes">ICAN</item>
-                        </items>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox" id="box_new_reservation_group">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="spacing">64</property>
-                    <child>
-                      <object class="GtkImage" id="img_new_reservation_group">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="pixbuf">../img/icons/new_res/group.png</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox" id="box_new_reservation_group_spin_lbl">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="valign">center</property>
-                        <property name="spacing">20</property>
-                        <child>
-                          <object class="GtkSpinButton" id="spin_new_reservation_group">
-                            <property name="height-request">50</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="max-length">2</property>
-                            <property name="text" translatable="yes">1</property>
-                            <property name="input-purpose">number</property>
-                            <property name="adjustment">spinAdjustement</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="lbl_new_reservation_group">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">personnes</property>
-                            <attributes>
-                              <attribute name="font-desc" value="Sawasdee 14"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkComboBoxText" id="combo_new_reservation_when">
-                    <property name="width-request">352</property>
-                    <property name="height-request">66</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="active-id">0</property>
-                    <items>
-                      <item id="0" translatable="yes">Matin</item>
-                      <item id="1" translatable="yes">Après-midi</item>
-                      <item id="2" translatable="yes">Journée</item>
-                    </items>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="button_new_res">
-                <property name="label" translatable="yes">Valider</property>
-                <property name="width-request">252</property>
-                <property name="height-request">42</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="halign">center</property>
-                <property name="hexpand">False</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCalendar" id="calendar_new_res">
-            <property name="width-request">346</property>
-            <property name="height-request">392</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="year">2020</property>
-            <property name="month">10</property>
-            <property name="day">22</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
     </child>
   </object>
   <object class="GtkWindow" id="window_drink">
