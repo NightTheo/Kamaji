@@ -78,12 +78,30 @@ void open_reservations_window(GtkWidget *widget,gpointer builder){
 void open_new_res_window(GtkWidget *widget,gpointer builder){
   GtkBuilder *newBuilder;
   GtkComboBox *inputplace;
+  GtkComboBox *inputTime;
+  GtkSpinButton *inputNbPeoples;
+  GtkCalendar *date;
   newBuilder = close_and_open_window(builder,"window_home", "window_new_reservation");
 
+  //liste déroulante pour le lieu séléctionner de la réservation
   inputplace = GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_new_reservation_where"));
   gtk_builder_connect_signals(newBuilder, NULL);
-
   g_signal_connect(inputplace,"changed",G_CALLBACK(retrieveDataCBox),inputplace);
+
+  //liste déroulante pour le temps passé dans une salle
+  inputTime= GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_new_reservation_when"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect(inputTime,"changed",G_CALLBACK(retrieveDataCBox),inputTime);
+
+  //liste déroulante pour le nombre de personne saisi
+  inputNbPeoples = GTK_SPIN_BUTTON(gtk_builder_get_object(newBuilder, "spin_new_reservation_group"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect(inputNbPeoples,"changed",G_CALLBACK(retrieveDataSpin),inputNbPeoples);
+
+  //Calendrier Take Date
+  date = GTK_CALENDAR(gtk_builder_get_object(newBuilder, "calendar_new_res"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect(date,"day-selected",G_CALLBACK(retrieveDataCalendar),date);
 
   click_button(newBuilder, "button_new_res", open_equipment_window);
 }
