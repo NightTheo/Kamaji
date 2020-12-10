@@ -46,7 +46,7 @@ MYSQL_RES* query(MYSQL *conn, const char * request ){
 void print_result(MYSQL_RES *result){
   MYSQL_ROW row;
   while ((row = mysql_fetch_row(result)) != NULL)
-     printf("%s \n", row[0]);
+     printf("%s %s\n", row[0], row[1]);
   mysql_free_result(result);
 }
 /*__________________________________*/

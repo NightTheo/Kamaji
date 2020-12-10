@@ -120,9 +120,19 @@ void open_new_res_window(GtkWidget *widget,gpointer builder){
   click_button(newBuilder, "button_new_res", open_equipment_window);
 }
 
+
+//PLACE ROOM
 void open_place_room_window(GtkWidget *widget,gpointer builder){
   GtkBuilder *newBuilder;
+  GtkComboBox *combo;
+  GtkTreeModel *model;
+
+
   newBuilder = close_and_open_window(builder, "window_home","window_place_room");
+  combo = GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_place_room_place"));
+  model = gtk_combo_box_get_model (combo);
+
+  gtk_combo_box_set_active_iter (combo, NULL);
 
   click_button(newBuilder, "button_place_room", open_planning_window);
 }
