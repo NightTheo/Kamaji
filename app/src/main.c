@@ -20,14 +20,7 @@ gcc `pkg-config --cflags gtk+-3.0` -o exe/main src/main.c `pkg-config --libs gtk
 
 //################################################################
 int main(int argc, char **argv){
-  //MYSQL
-  MYSQL *conn = connect_db();
-  MYSQL_RES *res;
-  res = query(conn, "SELECT name, id FROM PLACE WHERE state = 1");
-  print_result(res);
-  mysql_close(conn);
 
-  //GTK
   gtk_init(&argc, &argv);
   open_home_window("window_home");
   gtk_main();

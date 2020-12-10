@@ -121,18 +121,32 @@ void open_new_res_window(GtkWidget *widget,gpointer builder){
 }
 
 
+
+
 //PLACE ROOM
 void open_place_room_window(GtkWidget *widget,gpointer builder){
   GtkBuilder *newBuilder;
   GtkComboBoxText *combo;
+  MYSQL_ROW row;
+
+  MYSQL *conn = connect_db();
+  MYSQL_RES *res;
+  res = query(conn, "SELECT id, name FROM PLACE WHERE state = 1");
+
 
 
   newBuilder = close_and_open_window(builder, "window_home","window_place_room");
   combo = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(newBuilder, "combo_place_room_place"));
-  gtk_combo_box_text_append (combo, "12",  "Coucou");
 
+  while ((row = mysql_fetch_row(res)) != NULL)
+    gtk_combo_box_text_append (combo, row[0],  row[1]);
+
+  mysql_free_result(res);
+  mysql_close(conn);
   click_button(newBuilder, "button_place_room", open_planning_window);
 }
+
+
 
 void open_equipment_window(GtkWidget *Widget,gpointer builder){
   GtkBuilder *newBuilder;

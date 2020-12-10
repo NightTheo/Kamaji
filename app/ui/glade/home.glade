@@ -1992,9 +1992,6 @@
                 <property name="active_id">0</property>
                 <items>
                   <item id="0" translatable="yes">Choisir un lieu</item>
-                  <item id="1" translatable="yes">ESGI</item>
-                  <item id="2" translatable="yes">PPA</item>
-                  <item id="3" translatable="yes">ICAN</item>
                 </items>
               </object>
               <packing>
