@@ -124,15 +124,12 @@ void open_new_res_window(GtkWidget *widget,gpointer builder){
 //PLACE ROOM
 void open_place_room_window(GtkWidget *widget,gpointer builder){
   GtkBuilder *newBuilder;
-  GtkComboBox *combo;
-  GtkTreeModel *model;
+  GtkComboBoxText *combo;
 
 
   newBuilder = close_and_open_window(builder, "window_home","window_place_room");
-  combo = GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_place_room_place"));
-  model = gtk_combo_box_get_model (combo);
-
-  gtk_combo_box_set_active_iter (combo, NULL);
+  combo = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(newBuilder, "combo_place_room_place"));
+  gtk_combo_box_text_append (combo, "12",  "Coucou");
 
   click_button(newBuilder, "button_place_room", open_planning_window);
 }
