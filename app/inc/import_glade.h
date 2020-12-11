@@ -1,7 +1,6 @@
 /*
 import_glade.h
 
-last modif: 08 décembre 2020
 */
 
 void open_home_window(char *idWindow);
@@ -21,6 +20,8 @@ void open_planning_window(GtkWidget *widget,gpointer builder);
 void open_rooms_available_window(GtkWidget *Widget,gpointer builder);
 void open_drink_window_2(GtkWidget *Widget,gpointer builder);
 void open_reservations_window2(GtkWidget *widget,gpointer builder);
+
+void fillRooms(GtkComboBoxText *place,gpointer room);
 
 void on_window_main_destroy();
 void on_window_new_booking_destroy();

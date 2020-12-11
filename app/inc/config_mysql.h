@@ -4,8 +4,7 @@ _________________
 Théo OMNES
 Yanis TAGRI
 _________________
-last change:
-29 nov 2020
+
 */
 
 MYSQL *connect_db();

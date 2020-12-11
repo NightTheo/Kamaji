@@ -1,25 +1,22 @@
 /*
 retreiveDataFromInput.c
 
-retreive the date from windows inputs from glade file in ui/glade/home.glade
+retreive the data from windows inputs from glade file in ui/glade/home.glade
 and return the values in a array
 
-last modif:
 */
 
-#include <gtk/gtk.h>
-#include "../inc/RetrieveDataFromInput.h"
 
-char *retrieveDataCBox(GtkWidget *widget,GtkComboBox *input)
+char *retrieveDataCBoxText(GtkComboBoxText *input)
 {
   char *entry;
-  entry = (char*)gtk_combo_box_get_active_id(input);
+  entry = (char*)gtk_combo_box_get_active_id( GTK_COMBO_BOX(input) );
   printf ("ID NEW RESERVATION WINDOWS: %s\n", entry);
 
   return entry;
 }
 
-int retrieveDataSpin(GtkWidget *widget,GtkSpinButton *input)
+int retrieveDataSpin(GtkSpinButton *input)
 {
   int entry;
   entry = gtk_spin_button_get_value_as_int(input);
@@ -28,9 +25,8 @@ int retrieveDataSpin(GtkWidget *widget,GtkSpinButton *input)
   return entry;
 }
 
-void retrieveDataCalendar(GtkWidget *widget,GtkCalendar *input)
+void retrieveDataCalendar(GtkCalendar *input)
 {
-  printf("OK");
   guint year,month,day;
 
   gtk_calendar_get_date(input,&year,&month,&day);

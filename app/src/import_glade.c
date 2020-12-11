@@ -4,12 +4,13 @@ import_glade.c
 create the windows from the file glade in ui/glade/home.glade
 connet the signals for the navigation between the windows
 
-last modif: 08 décembre 2020
 */
 
 #include <gtk/gtk.h>
 #include "../inc/import_glade.h"
 #include "../inc/RetrieveDataFromInput.h"
+#include "../inc/insertDataGtk.h"
+
 
 //defines
 #define GLADE_FILE "ui/glade/home.glade"
@@ -100,22 +101,22 @@ void open_new_res_window(GtkWidget *widget,gpointer builder){
   //liste déroulante pour le lieu séléctionner de la réservation
   inputplace = GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_new_reservation_where"));
   gtk_builder_connect_signals(newBuilder, NULL);
-  g_signal_connect(inputplace,"changed",G_CALLBACK(retrieveDataCBox),inputplace);
+  g_signal_connect(inputplace,"changed",G_CALLBACK(retrieveDataCBoxText),NULL);
 
   //liste déroulante pour le temps passé dans une salle
   inputTime= GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_new_reservation_when"));
   gtk_builder_connect_signals(newBuilder, NULL);
-  g_signal_connect(inputTime,"changed",G_CALLBACK(retrieveDataCBox),inputTime);
+  g_signal_connect(inputTime,"changed",G_CALLBACK(retrieveDataCBoxText),NULL);
 
   //liste déroulante pour le nombre de personne saisi
   inputNbPeoples = GTK_SPIN_BUTTON(gtk_builder_get_object(newBuilder, "spin_new_reservation_group"));
   gtk_builder_connect_signals(newBuilder, NULL);
-  g_signal_connect(inputNbPeoples,"changed",G_CALLBACK(retrieveDataSpin),inputNbPeoples);
+  g_signal_connect(inputNbPeoples,"changed",G_CALLBACK(retrieveDataSpin),NULL);
 
   //Calendrier Take Date
   date = GTK_CALENDAR(gtk_builder_get_object(newBuilder, "calendar_new_res"));
   gtk_builder_connect_signals(newBuilder, NULL);
-  g_signal_connect(date,"day-selected",G_CALLBACK(retrieveDataCalendar),date);
+  g_signal_connect(date,"day-selected",G_CALLBACK(retrieveDataCalendar),NULL);
 
   click_button(newBuilder, "button_new_res", open_equipment_window);
 }
@@ -126,25 +127,30 @@ void open_new_res_window(GtkWidget *widget,gpointer builder){
 //PLACE ROOM
 void open_place_room_window(GtkWidget *widget,gpointer builder){
   GtkBuilder *newBuilder;
-  GtkComboBoxText *combo;
-  MYSQL_ROW row;
-
-  MYSQL *conn = connect_db();
-  MYSQL_RES *res;
-  res = query(conn, "SELECT id, name FROM PLACE WHERE state = 1");
-
-
+  GtkComboBoxText *place, *room;
 
   newBuilder = close_and_open_window(builder, "window_home","window_place_room");
-  combo = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(newBuilder, "combo_place_room_place"));
+  place = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(newBuilder, "combo_place_room_place"));
+  room = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(newBuilder, "combo_place_room_room"));
+  gtk_builder_connect_signals(newBuilder, NULL);
 
-  while ((row = mysql_fetch_row(res)) != NULL)
-    gtk_combo_box_text_append (combo, row[0],  row[1]);
+  comboBoxTextFill( place, "SELECT id, name FROM PLACE WHERE state = 1" );
+  g_signal_connect( place,"changed",G_CALLBACK(fillRooms),room);
 
-  mysql_free_result(res);
-  mysql_close(conn);
+
   click_button(newBuilder, "button_place_room", open_planning_window);
 }
+
+void fillRooms(GtkComboBoxText *place,gpointer room){
+  char *id;
+  char request[64] = "SELECT id,name FROM ROOM WHERE state = 1 AND place = ";
+
+  id = retrieveDataCBoxText( place );
+  strcat(request, id );
+  comboBoxTextFill( room, request );
+
+}
+
 
 
 

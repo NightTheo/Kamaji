@@ -4,12 +4,9 @@ _________________
 Théo OMNES
 Yanis TAGRI
 _________________
-last change:
-29 nov 2020
+
 */
 
-#include <mysql/mysql.h>
-#include "../inc/config_mysql.h"
 
 /*__________________________________*/
 //connect_to_DB
