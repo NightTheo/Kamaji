@@ -134,7 +134,7 @@ void open_place_room_window(GtkWidget *widget,gpointer builder){
   room = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(newBuilder, "combo_place_room_room"));
   gtk_builder_connect_signals(newBuilder, NULL);
 
-  comboBoxTextFill( place, "SELECT id, name FROM PLACE WHERE state = 1" );
+  comboBoxTextFill( place,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
   g_signal_connect( place,"changed",G_CALLBACK(fillRooms),room);
 
 
@@ -147,7 +147,7 @@ void fillRooms(GtkComboBoxText *place,gpointer room){
 
   id = retrieveDataCBoxText( place );
   strcat(request, id );
-  comboBoxTextFill( room, request );
+  comboBoxTextFill( room, "Choisir une salle", request );
 
 }
 

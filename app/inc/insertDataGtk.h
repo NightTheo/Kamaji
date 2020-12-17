@@ -4,7 +4,7 @@ insertDataGtk.h
 */
 
 
-void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *request );
+void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *firstRow, char *request );
 
 
 

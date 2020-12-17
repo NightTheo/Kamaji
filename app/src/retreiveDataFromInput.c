@@ -11,7 +11,7 @@ char *retrieveDataCBoxText(GtkComboBoxText *input)
 {
   char *entry;
   entry = (char*)gtk_combo_box_get_active_id( GTK_COMBO_BOX(input) );
-  printf ("ID NEW RESERVATION WINDOWS: %s\n", entry);
+  //printf ("ID NEW RESERVATION WINDOWS: %s\n", entry);
 
   return entry;
 }
