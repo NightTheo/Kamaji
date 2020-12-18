@@ -143,8 +143,10 @@ void open_place_room_window(GtkWidget *widget,gpointer builder){
   click_button(newBuilder, "button_place_room", open_planning_window);
 }
 
-
-
+/*
+* place - comboBoxText of the places
+* room - comboBoxText of the rooms
+*/
 void fillRooms(GtkComboBoxText *place,gpointer room){
   char *id;
   char request[64] = "SELECT id,name FROM ROOM WHERE state = 1 AND place = ";
@@ -157,14 +159,54 @@ void fillRooms(GtkComboBoxText *place,gpointer room){
 
 void open_equipment_window(GtkWidget *Widget,gpointer builder){
   GtkBuilder *newBuilder;
+  GtkCheckButton *checkMonitor;
+  GtkCheckButton *checkWhiteboard;
+  GtkCheckButton *checkCamera;
+  GtkCheckButton *checkProjector;
+
   newBuilder = close_and_open_window(builder,"window_new_reservation", "window_equipment");
+
+  //moniteur : id = check_equipment_monitor
+  checkMonitor = GTK_CHECK_BUTTON(gtk_builder_get_object(newBuilder, "check_equipment_monitor"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect( GTK_TOGGLE_BUTTON(checkMonitor),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
+
+  //whiteboard : id = check_equipment_whiteboard
+  checkWhiteboard = GTK_CHECK_BUTTON(gtk_builder_get_object(newBuilder, "check_equipment_whiteboard"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect( GTK_TOGGLE_BUTTON(checkWhiteboard),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
+
+  //camera : id = check_equipment_camera
+  checkCamera = GTK_CHECK_BUTTON(gtk_builder_get_object(newBuilder, "check_equipment_camera"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect( GTK_TOGGLE_BUTTON(checkCamera),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
+
+  //projector : id = check_equipment_projector
+  checkProjector = GTK_CHECK_BUTTON(gtk_builder_get_object(newBuilder, "check_equipment_projector"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect( GTK_TOGGLE_BUTTON(checkProjector),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
+
+
 
   click_button(newBuilder, "button_equipment_search", open_drink_window);
 }
 
 void open_drink_window(GtkWidget *Widget,gpointer builder){
   GtkBuilder *newBuilder;
+  GtkCheckButton *checkCoffee;
+  GtkCheckButton *checkTea;
+
   newBuilder = close_and_open_window(builder,"window_equipment", "window_drink");
+
+  //coffe : id = check_drink_coffee
+  checkCoffee = GTK_CHECK_BUTTON(gtk_builder_get_object(newBuilder, "check_drink_coffee"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect( GTK_TOGGLE_BUTTON(checkCoffee),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
+
+  //tea : id = check_drink_tea
+  checkTea = GTK_CHECK_BUTTON(gtk_builder_get_object(newBuilder, "check_drink_tea"));
+  gtk_builder_connect_signals(newBuilder, NULL);
+  g_signal_connect( GTK_TOGGLE_BUTTON(checkTea),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
 
   click_button(newBuilder, "button_drink_next", open_rooms_available_window);
 }
