@@ -100,6 +100,7 @@ void open_new_res_window(GtkWidget *widget,gpointer builder){
 
   //liste déroulante pour le lieu séléctionner de la réservation
   inputplace = GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_new_reservation_where"));
+  comboBoxTextFill( GTK_COMBO_BOX_TEXT(inputplace) ,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
   gtk_builder_connect_signals(newBuilder, NULL);
   g_signal_connect(inputplace,"changed",G_CALLBACK(retrieveDataCBoxText),NULL);
 
@@ -134,12 +135,15 @@ void open_place_room_window(GtkWidget *widget,gpointer builder){
   room = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(newBuilder, "combo_place_room_room"));
   gtk_builder_connect_signals(newBuilder, NULL);
 
+  // fill the comboBoxText with places from db
   comboBoxTextFill( place,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
   g_signal_connect( place,"changed",G_CALLBACK(fillRooms),room);
 
 
   click_button(newBuilder, "button_place_room", open_planning_window);
 }
+
+
 
 void fillRooms(GtkComboBoxText *place,gpointer room){
   char *id;
@@ -150,9 +154,6 @@ void fillRooms(GtkComboBoxText *place,gpointer room){
   comboBoxTextFill( room, "Choisir une salle", request );
 
 }
-
-
-
 
 void open_equipment_window(GtkWidget *Widget,gpointer builder){
   GtkBuilder *newBuilder;
