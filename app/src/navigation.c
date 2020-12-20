@@ -7,7 +7,7 @@ connet the signals for the navigation between the windows
 */
 
 #include <gtk/gtk.h>
-#include "../inc/import_glade.h"
+#include "../inc/navigation.h"
 #include "../inc/RetrieveDataFromInput.h"
 #include "../inc/insertDataGtk.h"
 
@@ -21,29 +21,31 @@ function: homekamaji
 Open Window_home
 */
 void open_home_window(char *idWindow){
+  Session session;
 
-  GtkBuilder *builder = newWindow(GLADE_FILE, idWindow);
+  newWindow(GLADE_FILE, idWindow, &session);
 
-  click_button(builder, "button_home_reservations", &open_reservations_window);
-  click_button(builder, "button_home_search", &open_new_res_window);
-  click_button(builder, "button_home_calendars", &open_place_room_window);
+  //click_button(builder, "button_home_reservations", &open_reservations_window);
+  click_button(&session, "button_home_search", &open_new_res_window);
+  //click_button(builder, "button_home_calendars", &open_place_room_window);
 
 }
 
 /*
 click_button
 */
-void click_button(GtkBuilder *builder, char *idButton, void (*pf)){
+void click_button(Sessio *session, char *idButton, void (*pf)){
   GtkWidget *button;
-  button = GTK_WIDGET(gtk_builder_get_object(builder, idButton));
-  g_signal_connect (button,"clicked",G_CALLBACK(pf),builder);
+  button = GTK_WIDGET(gtk_builder_get_object(session->builder, idButton));
+  g_signal_connect (button,"clicked",G_CALLBACK(pf),session);
 }
 
 /*
 close_and_open_window
 */
-GtkBuilder *close_and_open_window(GtkBuilder *builder, char *idOldWindow, char *idNewWindow){
-  gtk_widget_destroy( GTK_WIDGET(gtk_builder_get_object(builder, idOldWindow)) );
+
+void *close_and_open_window(Session *session, char *idNewWindow){
+  gtk_widget_destroy( GTK_WIDGET( session->window ) );
   g_object_unref(G_OBJECT(builder));
   return newWindow(GLADE_FILE, idNewWindow);
 }
@@ -51,22 +53,22 @@ GtkBuilder *close_and_open_window(GtkBuilder *builder, char *idOldWindow, char *
 /*
 newWindow
 */
-GtkBuilder *newWindow(char* file, char* idWindow){
+Session *newWindow(char* file, char* idWindow, Session *session){
   GtkBuilder      *builder;
   GtkWidget       *window;
 
-  builder = gtk_builder_new();
-  gtk_builder_add_from_file (builder,file, NULL);
+  builder = gtk_builder_new_from_file(file);
   window = GTK_WIDGET(gtk_builder_get_object(builder, idWindow));
   gtk_builder_connect_signals(builder, NULL);
   g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(gtk_main_quit), NULL);
 
+  session->builder = builder;
+  session->window = window;
+
   //Background color
   background_color(&window, "#444444" );
 
-
-  gtk_widget_show(window);
-  return builder;
+  gtk_widget_show_all(window);
 }
 
 void background_color( GtkWidget **widget, char *color ){
@@ -86,17 +88,21 @@ void background_color( GtkWidget **widget, char *color ){
 function: open_new_res_window
 Open window_new_reservation
 */
+
+/*
 void open_reservations_window(GtkWidget *widget,gpointer builder){
   close_and_open_window(builder,"window_home","window_reservations");
 }
+*/
+void open_new_res_window(GtkWidget *widget,gpointer data){
+  Search *search;
 
-void open_new_res_window(GtkWidget *widget,gpointer builder){
-  GtkBuilder *newBuilder;
   GtkComboBox *inputplace;
   GtkComboBox *inputTime;
   GtkSpinButton *inputNbPeoples;
   GtkCalendar *date;
-  newBuilder = close_and_open_window(builder,"window_home", "window_new_reservation");
+
+  close_and_open_window(data,"window_home", "window_new_reservation");
 
   //liste déroulante pour le lieu séléctionner de la réservation
   inputplace = GTK_COMBO_BOX(gtk_builder_get_object(newBuilder, "combo_new_reservation_where"));
@@ -119,13 +125,13 @@ void open_new_res_window(GtkWidget *widget,gpointer builder){
   gtk_builder_connect_signals(newBuilder, NULL);
   g_signal_connect(date,"day-selected",G_CALLBACK(retrieveDataCalendar),NULL);
 
-  click_button(newBuilder, "button_new_res", open_equipment_window);
+  click_button(data, "button_new_res", open_equipment_window);
 }
 
 
 
-
 //PLACE ROOM
+
 void open_place_room_window(GtkWidget *widget,gpointer builder){
   GtkBuilder *newBuilder;
   GtkComboBoxText *place, *room;
@@ -143,10 +149,12 @@ void open_place_room_window(GtkWidget *widget,gpointer builder){
   click_button(newBuilder, "button_place_room", open_planning_window);
 }
 
+
 /*
 * place - comboBoxText of the places
 * room - comboBoxText of the rooms
 */
+/* --
 void fillRooms(GtkComboBoxText *place,gpointer room){
   char *id;
   char request[64] = "SELECT id,name FROM ROOM WHERE state = 1 AND place = ";
@@ -232,5 +240,5 @@ void open_drink_window_2(GtkWidget *Widget,gpointer builder){
 void open_reservations_window2(GtkWidget *widget,gpointer builder){
   close_and_open_window(builder,"window_drink","window_reservations");
 }
-
+ -- */
 //#############
