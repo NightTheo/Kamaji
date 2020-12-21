@@ -24,7 +24,7 @@ typedef struct Session{
 void open_home_window(char *idWindow);
 
 void click_button(Session *session, char *idButton,void (*pf));
-void *close_and_open_window(Session *session, char *idNewWindow);
+void close_and_open_window(Session *session, char *idNewWindow);
 void newWindow(char* file, char* idWindow, Session *session);
 void background_color( GtkWidget **widget, char *color );
 
