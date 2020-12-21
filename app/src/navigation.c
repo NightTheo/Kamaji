@@ -32,10 +32,10 @@ void open_home_window(char *idWindow){
 /*
 click_button
 */
-void click_button(Session *session, char *idButton, void (*pf)){
+void click_button(Session *session, char *idButton, void (*function)){
   GtkWidget *button;
   button = GTK_WIDGET(gtk_builder_get_object(session->builder, idButton));
-  g_signal_connect (button,"clicked",G_CALLBACK(pf),session);
+  g_signal_connect (button,"clicked",G_CALLBACK(function),session);
 }
 
 /*
@@ -92,39 +92,43 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
 }
 
 void open_new_res_window(GtkWidget *widget, gpointer data){
-  Search *search;
+  Session *session = data;
+  GtkComboBox *inputplace;
+
+  close_and_open_window(session, "window_new_reservation");
+
+  //liste déroulante pour le lieu séléctionné de la réservation
+  inputplace = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_where"));
+  comboBoxTextFill( GTK_COMBO_BOX_TEXT(inputplace) ,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
+
+  click_button(session, "button_new_res", getSearchArguments);
+}
+
+void getSearchArguments(GtkWidget *widget,gpointer data){
+  Session *session = data;
+  Search *search = malloc(sizeof(Search));
 
   GtkComboBox *inputplace;
   GtkComboBox *inputTime;
   GtkSpinButton *inputNbPeoples;
-  GtkCalendar *date;
+  GtkCalendar *inputDate;
 
-  Session *session = data;
-  close_and_open_window(session, "window_new_reservation");
-
-  //liste déroulante pour le lieu séléctionner de la réservation
   inputplace = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_where"));
-  comboBoxTextFill( GTK_COMBO_BOX_TEXT(inputplace) ,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect(inputplace,"changed",G_CALLBACK(retrieveDataCBoxText),NULL);
-
-  //liste déroulante pour le temps passé dans une salle
-  inputTime= GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_when"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect(inputTime,"changed",G_CALLBACK(retrieveDataCBoxText),NULL);
-
-  //liste déroulante pour le nombre de personne saisi
   inputNbPeoples = GTK_SPIN_BUTTON(gtk_builder_get_object(session->builder, "spin_new_reservation_group"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect(inputNbPeoples,"changed",G_CALLBACK(retrieveDataSpin),NULL);
+  inputTime= GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_when"));
+  inputDate = GTK_CALENDAR(gtk_builder_get_object(session->builder, "calendar_new_res"));
 
-  //Calendrier Take Date
-  date = GTK_CALENDAR(gtk_builder_get_object(session->builder, "calendar_new_res"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect(date,"day-selected",G_CALLBACK(retrieveDataCalendar),NULL);
+  search->place = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputplace) ) );
+  search->nb_persons = gtk_spin_button_get_value_as_int(inputNbPeoples) ;
+  search->time_slot = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputTime) ) );
+  gtk_calendar_get_date(inputDate, (guint*)&search->date.year, (guint*)&search->date.month, (guint*)&search->date.day);
 
-  click_button(data, "button_new_res", open_equipment_window);
+  session->search = search;
+
+  open_drink_window(session);
 }
+
+
 
 //PLACE ROOM
 void open_place_room_window(GtkWidget *widget,gpointer data){
@@ -194,12 +198,13 @@ void open_equipment_window(GtkWidget *Widget,gpointer data){
 
 }
 
-void open_drink_window(GtkWidget *Widget,gpointer data){
-  Session *session = data;
+void open_drink_window(Session *session){
   GtkCheckButton *checkCoffee;
   GtkCheckButton *checkTea;
+  Search *search = session->search;
 
   close_and_open_window(session, "window_drink");
+  printf("\nLieu: %d\nNb personnes: %d\nCreneau: %d\nDate: %d-%d-%d\n",search->place,search->nb_persons, search->time_slot, search->date.year, search->date.month, search->date.day  );
 
   //coffe : id = check_drink_coffee
   checkCoffee = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_drink_coffee"));
