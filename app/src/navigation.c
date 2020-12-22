@@ -22,6 +22,7 @@ Open Window_home
 */
 void open_home_window(char *idWindow){
   Session *session = malloc(sizeof(Session));
+  if( session == NULL ) exit(1);
   newWindow(GLADE_FILE, idWindow, session);
   click_button(session, "button_home_reservations", &open_reservations_window);
   click_button(session, "button_home_search", &open_new_res_window);
@@ -107,6 +108,7 @@ void open_new_res_window(GtkWidget *widget, gpointer data){
 void getSearchArguments(GtkWidget *widget,gpointer data){
   Session *session = data;
   Search *search = malloc(sizeof(Search));
+  if( search == NULL ) exit(1);
 
   GtkComboBox *inputplace;
   GtkComboBox *inputTime;
@@ -118,14 +120,14 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
   inputTime= GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_when"));
   inputDate = GTK_CALENDAR(gtk_builder_get_object(session->builder, "calendar_new_res"));
 
-  search->place = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputplace) ) );
+  search->id_place = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputplace) ) );
   search->nb_persons = gtk_spin_button_get_value_as_int(inputNbPeoples) ;
   search->time_slot = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputTime) ) );
   gtk_calendar_get_date(inputDate, (guint*)&search->date.year, (guint*)&search->date.month, (guint*)&search->date.day);
 
   session->search = search;
 
-  open_drink_window(session);
+  open_equipment_window(session);
 }
 
 
@@ -162,66 +164,77 @@ void fillRooms(GtkComboBoxText *place,gpointer room){
 
 }
 
-void open_equipment_window(GtkWidget *Widget,gpointer data){
-  GtkCheckButton *checkMonitor;
-  GtkCheckButton *checkWhiteboard;
-  GtkCheckButton *checkCamera;
-  GtkCheckButton *checkProjector;
 
-  Session *session = data;
+// EQUIPMENTS
+void open_equipment_window(Session *session){
 
   close_and_open_window(session, "window_equipment");
-
-  //moniteur : id = check_equipment_monitor
-  checkMonitor = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_monitor"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect( GTK_TOGGLE_BUTTON(checkMonitor),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
-
-  //whiteboard : id = check_equipment_whiteboard
-  checkWhiteboard = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_whiteboard"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect( GTK_TOGGLE_BUTTON(checkWhiteboard),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
-
-  //camera : id = check_equipment_camera
-  checkCamera = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_camera"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect( GTK_TOGGLE_BUTTON(checkCamera),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
-
-  //projector : id = check_equipment_projector
-  checkProjector = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_projector"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect( GTK_TOGGLE_BUTTON(checkProjector),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
-
-
-
-  click_button(session, "button_equipment_search", open_drink_window);
+  click_button(session, "button_equipment_search", getEquipmentsCheckbox);
 
 }
 
-void open_drink_window(Session *session){
-  GtkCheckButton *checkCoffee;
-  GtkCheckButton *checkTea;
-  Search *search = session->search;
-
-  close_and_open_window(session, "window_drink");
-  printf("\nLieu: %d\nNb personnes: %d\nCreneau: %d\nDate: %d-%d-%d\n",search->place,search->nb_persons, search->time_slot, search->date.year, search->date.month, search->date.day  );
-
-  //coffe : id = check_drink_coffee
-  checkCoffee = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_drink_coffee"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect( GTK_TOGGLE_BUTTON(checkCoffee),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
-
-  //tea : id = check_drink_tea
-  checkTea = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_drink_tea"));
-  gtk_builder_connect_signals(session->builder, NULL);
-  g_signal_connect( GTK_TOGGLE_BUTTON(checkTea),"toggled",G_CALLBACK(retrieveDataCheckButton),NULL);
-
-  click_button(session, "button_drink_next", open_rooms_available_window);
-}
-
-void open_rooms_available_window(GtkWidget *Widget,gpointer data){
+void getEquipmentsCheckbox(GtkWidget *widget,gpointer data){
   Session *session = data;
+  int equipments[4] = {0};
+
+  GtkCheckButton *checkMonitor = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_monitor"));
+  GtkCheckButton *checkWhiteboard = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_whiteboard"));
+  GtkCheckButton *checkCamera = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_camera"));
+  GtkCheckButton *checkProjector = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_projector"));
+
+  equipments[0] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkMonitor) );
+  equipments[1] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkWhiteboard) );
+  equipments[2] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkCamera) );
+  equipments[3] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkProjector) );
+
+  for(int i = 0; i < 4; i++)
+    session->search->equipments[i] = equipments[i];
+
+  open_drink_window(session);
+}
+
+
+// DRINK
+void open_drink_window(Session *session){
+  close_and_open_window(session, "window_drink");
+  click_button(session, "button_drink_next", getDrinksCheckbox);
+}
+
+void getDrinksCheckbox(GtkWidget *widget,gpointer data){
+  Session *session = data;
+  Search *search = session->search;
+  int drinks[2] = {0};
+
+  GtkCheckButton *checkCoffee = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_drink_coffee"));
+  GtkCheckButton *checkTea = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_drink_tea"));
+
+  drinks[0] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkCoffee) );
+  drinks[1] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkTea) );
+
+  for(int i = 0; i < 2; i++)
+    session->search->drinks[i] = drinks[i];
+
+  open_rooms_available_window(session);
+}
+
+
+
+// RESULT SEARCH
+
+void open_rooms_available_window(Session *session){
+  Search *search = session->search;
+  int eq[4];
+  int dr[2];
+  int i;
+
+  for(i = 0; i < 4; i++) eq[i] = session->search->equipments[i];
+  for(i = 0; i < 2; i++) dr[i] = session->search->drinks[i];
+
   close_and_open_window(session,"window_rooms_available");
+  printf("\nLieu: %d\nNb personnes: %d\nCreneau: %d\nDate: %d-%d-%d\n",search->id_place,search->nb_persons, search->time_slot, search->date.year, search->date.month, search->date.day  );
+  printf("Ecran: %d\nWhiteBoard: %d\nCamera: %d\nProjecteur: %d\n",eq[0],eq[1],eq[2],eq[3] );
+  printf("Caffe: %d\nThe: %d\n",dr[0],dr[1]);
+
 }
 
 void open_planning_window(GtkWidget *Widget,gpointer data){
