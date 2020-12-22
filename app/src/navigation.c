@@ -8,7 +8,6 @@ connet the signals for the navigation between the windows
 
 #include <gtk/gtk.h>
 #include "../inc/navigation.h"
-#include "../inc/RetrieveDataFromInput.h"
 #include "../inc/insertDataGtk.h"
 
 
@@ -158,7 +157,7 @@ void fillRooms(GtkComboBoxText *place,gpointer room){
   char *id;
   char request[64] = "SELECT id,name FROM ROOM WHERE state = 1 AND place = ";
 
-  id = retrieveDataCBoxText( place );
+  id = (char*)gtk_combo_box_get_active_id( GTK_COMBO_BOX(place) );
   strcat(request, id );
   comboBoxTextFill( room, "Choisir une salle", request );
 
@@ -222,18 +221,61 @@ void getDrinksCheckbox(GtkWidget *widget,gpointer data){
 // RESULT SEARCH
 
 void open_rooms_available_window(Session *session){
-  Search *search = session->search;
-  int eq[4];
-  int dr[2];
-  int i;
+  Search *s = session->search;
+  Date d = s->date;
 
-  for(i = 0; i < 4; i++) eq[i] = session->search->equipments[i];
-  for(i = 0; i < 2; i++) dr[i] = session->search->drinks[i];
+  GtkBox *listContainer;
 
   close_and_open_window(session,"window_rooms_available");
-  printf("\nLieu: %d\nNb personnes: %d\nCreneau: %d\nDate: %d-%d-%d\n",search->id_place,search->nb_persons, search->time_slot, search->date.year, search->date.month, search->date.day  );
-  printf("Ecran: %d\nWhiteBoard: %d\nCamera: %d\nProjecteur: %d\n",eq[0],eq[1],eq[2],eq[3] );
-  printf("Caffe: %d\nThe: %d\n",dr[0],dr[1]);
+  //printSearchParameter(s);
+
+  //get the list container
+  listContainer = GTK_BOX( gtk_builder_get_object(session->builder, "box_available_list") );
+
+  //prepare the variables
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char *request = malloc(sizeof(char) * 1024);
+  if(request == NULL) exit(1);
+
+  sprintf(request, "SELECT A.* FROM (\n\
+  	SELECT R.id, R.name as room_name, P.name as place_name, R.max_capacity, R.price_half_day\n\
+      FROM ROOM as R\n\
+      INNER JOIN PLACE as P ON R.place = P.id\n\
+      WHERE R.max_capacity >= %d\n\
+      AND R.place = %d\n\
+      AND R.state = 1\n\
+  ) as A\n\
+  LEFT JOIN (\n\
+      SELECT B.room FROM BOOKING AS B\n\
+      INNER JOIN ROOM as R ON B.room = R.id\n\
+      WHERE R.place = %d\n\
+      AND B.date_booking = '%d-%d-%d'\n\
+      AND ( B.time_slot = '8h - 20h' OR B.time_slot = '%s')\n\
+      AND B.state = 1\n\
+  ) as B\n\
+  ON A.id = B.room\n\
+  WHERE B.room IS NULL;\n"\
+  , s->nb_persons, s->id_place, s->id_place, d.year, d.month, d.day, time_slots[s->time_slot] );
+
+
+  //query the reservations
+  MYSQL_ROW r;
+  MYSQL *conn = connect_db();
+  MYSQL_RES *result;
+
+  result = query(conn, request);
+  while ((r = mysql_fetch_row(result)) != NULL){
+    printf( "| %s | %s | %s | %s | %s |\n", r[0], r[1], r[2], r[3], r[4] );
+  }
+
+
+  mysql_free_result(result);
+  mysql_close(conn);
+  free(request);
+
+  //loop and clone a reservation
+
+
 
 }
 
@@ -255,5 +297,36 @@ void open_reservations_window2(GtkWidget *widget,gpointer data){
   Session *session = data;
   close_and_open_window(session, "window_reservations");
 }
+
+
+
+// printf
+
+void printSearchParameter(Search *search){
+  int eq[4];
+  int dr[2];
+  int i;
+
+  for(i = 0; i < 4; i++) eq[i] = search->equipments[i];
+  for(i = 0; i < 2; i++) dr[i] = search->drinks[i];
+
+  printf("\nLieu: %d\nNb personnes: %d\nCreneau: %d\nDate: %d-%d-%d\n",search->id_place,search->nb_persons, search->time_slot, search->date.year, search->date.month, search->date.day  );
+  printf("Ecran: %d\nWhiteBoard: %d\nCamera: %d\nProjecteur: %d\n",eq[0],eq[1],eq[2],eq[3] );
+  printf("Caffe: %d\nThe: %d\n",dr[0],dr[1]);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //#############

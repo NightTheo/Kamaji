@@ -15,7 +15,7 @@ void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *firstRow, char *requ
   //empty the comboBoxText
   gtk_combo_box_text_remove_all (comboBoxText);
 
-  //Add the first : choose a room
+  //Add the first row
   gtk_combo_box_text_append(comboBoxText,"0", firstRow);
   gtk_combo_box_set_active_id (GTK_COMBO_BOX(comboBoxText), "0");
 

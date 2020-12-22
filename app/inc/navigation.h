@@ -69,6 +69,12 @@ void getDrinksCheckbox(GtkWidget *widget,gpointer data);
 void fillRooms(GtkComboBoxText *place,gpointer room);
 
 
+// PRINT
+void printSearchParameter(Search *seach);
+
+
+
+
 
 
 //
