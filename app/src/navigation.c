@@ -208,6 +208,7 @@ void getDrinksCheckbox(GtkWidget *widget,gpointer data){
 
 void open_rooms_available_window(Session *session){
   Search *search = session->search;
+  RoomGtkBox *room;
   GtkContainer *listContainer;
   MYSQL_ROW row;
   MysqlSelect select;
@@ -225,7 +226,9 @@ void open_rooms_available_window(Session *session){
 
   select = findAvailableRooms(search);
   while ((row = mysql_fetch_row(select.result)) != NULL){
-    addRoomAvailable(row, session, listContainer);
+    room = newRoomAvailable(row);
+    displayRoomEquipments(room, row[0]);
+    gtk_container_add ( listContainer, GTK_WIDGET(room->box) );
   }
 
   mysql_free_result(select.result);

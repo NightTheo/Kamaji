@@ -57,16 +57,6 @@ typedef struct RoomGtkBox{
   GtkImage *equipments[4];
   GtkComboBoxText *bookingTimeSlotComboBox;
   GtkButton *bookingButton;
-  /*
-  box : box_available_list_element_0
-  room - place : lbl_available_list_element_0_where
-  time slot : lbl_available_list_element_0_time_slot
-  price 1/2 day: lbl_available_list_element_0_price
-  nb persons: lbl_available_list_element_0_left_nb
-  equipments : img_rooms_available_{ whiteboard / monitor / projector/ camera }0
-  booking time slot : combo_available_list_element_0_when
-  booking button : button_available_list_element_0_booking
-  */
 } RoomGtkBox;
 
 
@@ -93,11 +83,12 @@ void getSearchArguments(GtkWidget *widget,gpointer data);
 void getEquipmentsCheckbox(GtkWidget *widget,gpointer data);
 void getDrinksCheckbox(GtkWidget *widget,gpointer data);
 MysqlSelect findAvailableRooms(Search *search);
-
+int *getRoomsEquipment(char *idRoom);
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
-void addRoomAvailable(MYSQL_ROW row, Session *session, GtkContainer *listContainer);
+RoomGtkBox *newRoomAvailable(MYSQL_ROW row);
+void displayRoomEquipments(RoomGtkBox *room, char *idRoom);
 
 // PRINT
 void printSearchParameter(Search *seach);
