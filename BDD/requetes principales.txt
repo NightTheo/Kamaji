@@ -70,7 +70,7 @@ WHERE E.state = 1 AND room = 1 ;
 
 
 //Accueil > Réservations
-SELECT B.id, R.id R.name, P.name, B.nb_persons, B.price, B.date_booking, B.time_slot
+SELECT B.id, R.id, R.name, P.name, B.nb_persons, B.price, B.date_booking, B.time_slot
 FROM BOOKING as B
 INNER JOIN ROOM as R ON B.room = R.id
 INNER JOIN PLACE as P ON R.place = P.id
@@ -79,9 +79,4 @@ WHERE B.state = 1 AND R.state = 1 AND P.state = 1
 SELECT drink FROM _booking_include_drink
 INNER JOIN BOOKING as B WHERE B.state = 1 AND B.id = ?
 
-SELECT equipment FROM _room_owns_equipment WHERE room = ? 
-
-
-
-
-
+SELECT equipment FROM _room_owns_equipment WHERE room = ?

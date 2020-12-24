@@ -1,5 +1,7 @@
 INSERT INTO EQUIPMENT(id,name,category) VALUES (1,'Vidéo projecteur','éléctronique');
-INSERT INTO EQUIPMENT(id,name,category) VALUES (2,'Tableau velleda','support criture');
+INSERT INTO EQUIPMENT(id,name,category) VALUES (2,'Camera','éléctronique');
+INSERT INTO EQUIPMENT(id,name,category) VALUES (3,'WhiteBoard','support écriture');
+INSERT INTO EQUIPMENT(id,name,category) VALUES (4,'Video-projecteur','éléctronique');
 
 INSERT INTO PLACE(id,name,address,map) VALUES(1,'ESGI','242 rue faubourg saint aintoi','plan/planESGI.jpg');
 INSERT INTO PLACE(id,name,address,map) VALUES(2,'ICAN','21 Rue Erard','plan/planICAN.jpg');

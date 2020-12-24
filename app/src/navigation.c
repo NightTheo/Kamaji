@@ -63,34 +63,34 @@ void newWindow(char* file, char* idWindow, Session *session){
   session->window = GTK_WINDOW(window);
 
   //Background color
-  background_color(&window, "#444444" );
+  background_color(window, "#444444" );
 
   gtk_widget_show_all(window);
 }
 
-void background_color( GtkWidget **widget, char *color ){
+void background_color( GtkWidget *widget, char *color ){
   GtkCssProvider * cssProvider = gtk_css_provider_new();    //store the css
 
   char css[64] = "* { background-image:none; background-color:";
   strcat( strcat( css , color ), ";}" );
 
   gtk_css_provider_load_from_data(cssProvider, css,-1,NULL);
-  GtkStyleContext * context = gtk_widget_get_style_context(*widget);   //manage CSS provider
+  GtkStyleContext * context = gtk_widget_get_style_context(widget);   //manage CSS provider
   gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(cssProvider),GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
 //##### NAVIGATION ####################################################
 
-/*
-function: open_new_res_window
-Open window_new_reservation
-*/
 
 void open_reservations_window(GtkWidget *widget,gpointer data){
   Session *session = data;
   close_and_open_window(session,"window_reservations");
 }
 
+/*
+function: open_new_res_window
+Open window_new_reservation
+*/
 void open_new_res_window(GtkWidget *widget, gpointer data){
   Session *session = data;
   GtkComboBox *inputplace;
@@ -143,24 +143,10 @@ void open_place_room_window(GtkWidget *widget,gpointer data){
 
   // fill the comboBoxText with places from db
   comboBoxTextFill( place,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
-  g_signal_connect( place,"changed",G_CALLBACK(fillRooms),room);
+  g_signal_connect( place,"changed",G_CALLBACK(fillComboBoxRooms),room);
 
 
   click_button(session, "button_place_room", open_planning_window);
-}
-
-/*
-* place - comboBoxText of the places
-* room - comboBoxText of the rooms
-*/
-void fillRooms(GtkComboBoxText *place,gpointer room){
-  char *id;
-  char request[64] = "SELECT id,name FROM ROOM WHERE state = 1 AND place = ";
-
-  id = (char*)gtk_combo_box_get_active_id( GTK_COMBO_BOX(place) );
-  strcat(request, id );
-  comboBoxTextFill( room, "Choisir une salle", request );
-
 }
 
 
@@ -221,21 +207,36 @@ void getDrinksCheckbox(GtkWidget *widget,gpointer data){
 // RESULT SEARCH
 
 void open_rooms_available_window(Session *session){
-  Search *s = session->search;
-  Date d = s->date;
-
-  GtkBox *listContainer;
+  Search *search = session->search;
+  GtkContainer *listContainer;
+  MYSQL_ROW row;
+  MysqlSelect select;
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
 
   close_and_open_window(session,"window_rooms_available");
   //printSearchParameter(s);
 
   //get the list container
-  listContainer = GTK_BOX( gtk_builder_get_object(session->builder, "box_available_list") );
+  listContainer = GTK_CONTAINER( gtk_builder_get_object(session->builder, "box_available_list") );
 
-  //prepare the variables
+  //background_color of the map container
+  GtkWidget *viewport_available_right = GTK_WIDGET(gtk_builder_get_object(session->builder,"viewport_available_right"));
+  background_color(viewport_available_right , "#FFFFFF");
+
+  select = findAvailableRooms(search);
+  while ((row = mysql_fetch_row(select.result)) != NULL){
+    addRoomAvailable(row, session, listContainer);
+  }
+
+  mysql_free_result(select.result);
+  mysql_close(select.conn);
+}
+
+MysqlSelect findAvailableRooms(Search *s){
+  Date d = s->date;
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
-  char *request = malloc(sizeof(char) * 1024);
-  if(request == NULL) exit(1);
+  char request[1024];
+  MysqlSelect select;
 
   sprintf(request, "SELECT A.* FROM (\n\
   	SELECT R.id, R.name as room_name, P.name as place_name, R.max_capacity, R.price_half_day\n\
@@ -257,27 +258,19 @@ void open_rooms_available_window(Session *session){
   WHERE B.room IS NULL;\n"\
   , s->nb_persons, s->id_place, s->id_place, d.year, d.month, d.day, time_slots[s->time_slot] );
 
-
   //query the reservations
-  MYSQL_ROW r;
   MYSQL *conn = connect_db();
-  MYSQL_RES *result;
+  MYSQL_RES *result = query(conn, request);
 
-  result = query(conn, request);
-  while ((r = mysql_fetch_row(result)) != NULL){
-    printf( "| %s | %s | %s | %s | %s |\n", r[0], r[1], r[2], r[3], r[4] );
-  }
+  select.conn = conn;
+  select.result = result;
+  strcpy(select.request, request);
 
-
-  mysql_free_result(result);
-  mysql_close(conn);
-  free(request);
-
-  //loop and clone a reservation
-
-
-
+  return select;
 }
+
+
+//
 
 void open_planning_window(GtkWidget *Widget,gpointer data){
   Session *session = data;
