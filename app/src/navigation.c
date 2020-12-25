@@ -221,32 +221,107 @@ void open_rooms_available_window(Session *session){
   GtkContainer *listContainer;
   MYSQL_ROW row;
   MysqlSelect select;
+  Booking *booking;
 
   close_and_open_window(session,"window_rooms_available");
   //printSearchParameter(s);
   listContainer = GTK_CONTAINER( gtk_builder_get_object(session->builder, "box_available_list") );
+
   //background_color of the map container
   GtkWidget *viewport_available_right = GTK_WIDGET(gtk_builder_get_object(session->builder,"viewport_available_right"));
   background_color(viewport_available_right , "#FFFFFF");
 
   select = findAvailableRooms(search);
-
   while ((row = mysql_fetch_row(select.result)) != NULL){
     room = newRoomAvailable(row);
     displayRoomEquipments(room, row[0]);
     displayTimeSlotComboBox(room, row[0], search);
     displayTimeSlotLabel(room, row[0], search );
 
-    //reservation : besoi de l'id
-
+    booking = prepareBooking(search, room, row[0]);
+    booking->session = session;
+    g_signal_connect (room->bookingButton,"clicked",G_CALLBACK(reserveRoom),booking);
     gtk_container_add ( listContainer, GTK_WIDGET(room->box) );
-
   }
-
   mysql_free_result(select.result);
   mysql_close(select.conn);
 }
 
+// ----------------------
+
+Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){
+  Booking *booking;
+  GtkComboBox *timeSlotComboBox;
+  int priceHalfDay;
+  double price = 0;
+
+  booking = malloc( sizeof(Booking) );
+  if( booking == NULL ) exit(1);
+
+  booking->idRoom = idRoom;
+  booking->nb_persons = search->nb_persons;
+  booking->date = search->date;
+  for( int i = 0; i < 2; i++ )
+    booking->drinks[i] = search->drinks[i];
+
+  // get the time slot from the comboBoxText
+  timeSlotComboBox = GTK_COMBO_BOX( gtk_builder_get_object(room->builder, "combo_available_list_element_when") );
+  booking->time_slot = atoi( gtk_combo_box_get_active_id(timeSlotComboBox) );
+
+  price += getPriceDrinks(search);
+
+  priceHalfDay = atoi( gtk_label_get_text(room->priceHalfDay) );
+  price += search->time_slot == 2 ? priceHalfDay * 2 : priceHalfDay ;
+  booking->price = price;
+
+  return booking;
+}
+
+//
+
+int getPriceDrinks(Search *search){
+  int price = 0;
+  char request[512];
+  MYSQL *conn = connect_db();
+  MYSQL_ROW row;
+
+  for(int i = 0; i < 2; i++){
+    if( search->drinks[i] == 1 ){
+      MYSQL_RES *result;
+      sprintf(request, "SELECT ppd.price FROM ROOM as R\
+      INNER JOIN PLACE as P on R.place = P.id\
+      INNER JOIN _place_propose_drink as ppd on ppd.place = P.id\
+      WHERE ppd.place = %d AND ppd.drink = %d\
+      GROUP BY P.id", search->id_place, search->drinks[i]);
+      result = query(conn, request);
+      if((row = mysql_fetch_row(result)) != NULL)
+        price += atoi(*row);
+
+      mysql_free_result(result);
+    }
+  }
+  mysql_close(conn);
+
+  return price;
+}
+
+// ----------------------
+
+void reserveRoom(GtkWidget *widget, gpointer data){
+  Booking *b = data;
+  Session *session = b->session;
+  MYSQL *conn = connect_db();
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char request[512];
+
+  sprintf(request, "INSERT INTO BOOKING(nb_persons,price,date_booking,time_slot,state,room) \
+  VALUES(%d,%d,'%d-%d-%d','%s',1,%s) ;",\
+  b->nb_persons, (int)b->price, b->date.year, b->date.month, b->date.day, time_slots[b->time_slot], b->idRoom );
+
+  printf("%s\n", request);
+  //query(conn, request);
+  mysql_close(conn);
+}
 
 // ----------------------
 
@@ -291,6 +366,7 @@ MysqlSelect findAvailableRooms(Search *s){
   return select;
 }
 
+// ----------------------
 
 int isRestDayAvailable( Search *search, char *idRoom ){
   MYSQL *conn = connect_db();
@@ -325,7 +401,7 @@ int isRestDayAvailable( Search *search, char *idRoom ){
   return isAvailable;
 }
 
-
+// ----------------------
 //
 
 void open_planning_window(GtkWidget *Widget,gpointer data){

@@ -63,6 +63,11 @@ SELECT IF(
 	AND state = 1) > 0, 1, 0
 ) AS Q
 
+SELECT ppd.price, P.name FROM ROOM as R
+INNER JOIN PLACE as P on R.place = P.id
+INNER JOIN _place_propose_drink as ppd on ppd.place = P.id
+WHERE ppd.place = 1 AND ppd.drink = 1
+GROUP BY P.id
 
 SELECT roe.equipment FROM _room_owns_equipment as roe
 INNER JOIN EQUIPMENT as E ON roe.equipment = E.id

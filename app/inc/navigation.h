@@ -26,20 +26,23 @@ typedef struct Calendar{
   int time_slot;
 } Calendar;
 
-typedef struct Booking{
-  int nb_persons;
-  double price;
-  Date date;
-  int time_slot;
-} Booking;
 
 typedef struct Session{
   GtkBuilder *builder;
   GtkWindow *window;
   Search *search;
   Calendar *calendar;
-  Booking *booking;
 } Session;
+
+typedef struct Booking{
+  char *idRoom;
+  int nb_persons;
+  double price;
+  Date date;
+  int drinks[2];
+  int time_slot;
+  Session *session;
+} Booking;
 
 typedef struct MysqlSelect{
   MYSQL *conn;
@@ -85,6 +88,8 @@ void getDrinksCheckbox(GtkWidget *widget,gpointer data);
 MysqlSelect findAvailableRooms(Search *search);
 int *getRoomsEquipment(char *idRoom);
 int isRestDayAvailable( Search *search, char *idRoom );
+Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom );
+int getPriceDrinks(Search *search);
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
@@ -92,6 +97,7 @@ RoomGtkBox *newRoomAvailable(MYSQL_ROW row);
 void displayRoomEquipments(RoomGtkBox *room, char *idRoom);
 void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search);
 void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search);
+void reserveRoom(GtkWidget *widget, gpointer data);
 
 // PRINT
 void printSearchParameter(Search *seach);
