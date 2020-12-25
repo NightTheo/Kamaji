@@ -15,6 +15,7 @@ INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (4,'Salle 3',
 
 INSERT INTO BOOKING(id,nb_persons,price,date_booking,time_slot,state,room) VALUES(1,6,25,'2020-11-24','14h - 20h',1,1);
 INSERT INTO BOOKING(id,nb_persons,price,date_booking,time_slot,state,room) VALUES(2,8,34,'2020-11-24','8h - 14h',1,1);
+INSERT INTO BOOKING(id,nb_persons,price,date_booking,time_slot,state,room) VALUES(3,8,40,'2020-11-24','14h - 20h',1,2);
 
 INSERT INTO DRINK(id,name,category) VALUES(1,'café','boisson chaude');
 INSERT INTO DRINK(id,name,category) VALUES(2,'thé','boisson froide');

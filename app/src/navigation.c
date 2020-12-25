@@ -15,6 +15,7 @@ connet the signals for the navigation between the windows
 #define GLADE_FILE "ui/glade/home.glade"
 
 
+// ----------------------
 /*
 function: homekamaji
 Open Window_home
@@ -29,6 +30,7 @@ void open_home_window(char *idWindow){
 
 }
 
+// ----------------------
 /*
 click_button
 */
@@ -38,15 +40,16 @@ void click_button(Session *session, char *idButton, void (*function)){
   g_signal_connect (button,"clicked",G_CALLBACK(function),session);
 }
 
+// ----------------------
 /*
 close_and_open_window
 */
-
 void close_and_open_window(Session *session, char *idNewWindow){
   gtk_widget_destroy( GTK_WIDGET( session->window ) );
   newWindow(GLADE_FILE, idNewWindow, session);
 }
 
+// ----------------------
 /*
 newWindow
 */
@@ -68,6 +71,7 @@ void newWindow(char* file, char* idWindow, Session *session){
   gtk_widget_show_all(window);
 }
 
+// ----------------------
 void background_color( GtkWidget *widget, char *color ){
   GtkCssProvider * cssProvider = gtk_css_provider_new();    //store the css
 
@@ -87,6 +91,7 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
   close_and_open_window(session,"window_reservations");
 }
 
+// ----------------------
 /*
 function: open_new_res_window
 Open window_new_reservation
@@ -104,6 +109,7 @@ void open_new_res_window(GtkWidget *widget, gpointer data){
   click_button(session, "button_new_res", getSearchArguments);
 }
 
+// ----------------------
 void getSearchArguments(GtkWidget *widget,gpointer data){
   Session *session = data;
   Search *search = malloc(sizeof(Search));
@@ -123,6 +129,7 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
   search->nb_persons = gtk_spin_button_get_value_as_int(inputNbPeoples) ;
   search->time_slot = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputTime) ) );
   gtk_calendar_get_date(inputDate, (guint*)&search->date.year, (guint*)&search->date.month, (guint*)&search->date.day);
+  search->date.month++;
 
   session->search = search;
 
@@ -130,7 +137,7 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
 }
 
 
-
+// ----------------------
 //PLACE ROOM
 void open_place_room_window(GtkWidget *widget,gpointer data){
   Session *session = data;
@@ -149,7 +156,7 @@ void open_place_room_window(GtkWidget *widget,gpointer data){
   click_button(session, "button_place_room", open_planning_window);
 }
 
-
+// ----------------------
 // EQUIPMENTS
 void open_equipment_window(Session *session){
 
@@ -158,6 +165,7 @@ void open_equipment_window(Session *session){
 
 }
 
+// ----------------------
 void getEquipmentsCheckbox(GtkWidget *widget,gpointer data){
   Session *session = data;
   int equipments[4] = {0};
@@ -178,12 +186,13 @@ void getEquipmentsCheckbox(GtkWidget *widget,gpointer data){
   open_drink_window(session);
 }
 
-
+// ----------------------
 // DRINK
 void open_drink_window(Session *session){
   close_and_open_window(session, "window_drink");
   click_button(session, "button_drink_next", getDrinksCheckbox);
 }
+// ----------------------
 
 void getDrinksCheckbox(GtkWidget *widget,gpointer data){
   Session *session = data;
@@ -203,8 +212,8 @@ void getDrinksCheckbox(GtkWidget *widget,gpointer data){
 }
 
 
-
-// RESULT SEARCH
+// ----------------------
+// ROOMS AVAILABLES
 
 void open_rooms_available_window(Session *session){
   Search *search = session->search;
@@ -212,28 +221,34 @@ void open_rooms_available_window(Session *session){
   GtkContainer *listContainer;
   MYSQL_ROW row;
   MysqlSelect select;
-  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
 
   close_and_open_window(session,"window_rooms_available");
   //printSearchParameter(s);
-
-  //get the list container
   listContainer = GTK_CONTAINER( gtk_builder_get_object(session->builder, "box_available_list") );
-
   //background_color of the map container
   GtkWidget *viewport_available_right = GTK_WIDGET(gtk_builder_get_object(session->builder,"viewport_available_right"));
   background_color(viewport_available_right , "#FFFFFF");
 
   select = findAvailableRooms(search);
+
   while ((row = mysql_fetch_row(select.result)) != NULL){
     room = newRoomAvailable(row);
     displayRoomEquipments(room, row[0]);
+    displayTimeSlotComboBox(room, row[0], search);
+    displayTimeSlotLabel(room, row[0], search );
+
+    //reservation : besoi de l'id
+
     gtk_container_add ( listContainer, GTK_WIDGET(room->box) );
+
   }
 
   mysql_free_result(select.result);
   mysql_close(select.conn);
 }
+
+
+// ----------------------
 
 MysqlSelect findAvailableRooms(Search *s){
   Date d = s->date;
@@ -241,6 +256,10 @@ MysqlSelect findAvailableRooms(Search *s){
   char request[1024];
   MysqlSelect select;
 
+  /*
+  select ROOM.id , ROOM.name, PLACE.name, ROOM.max_capacity and ROOM.price_half_day
+  for the rooms which are available at a date and at a time slot.
+  */
   sprintf(request, "SELECT A.* FROM (\n\
   	SELECT R.id, R.name as room_name, P.name as place_name, R.max_capacity, R.price_half_day\n\
       FROM ROOM as R\n\
@@ -270,6 +289,40 @@ MysqlSelect findAvailableRooms(Search *s){
   strcpy(select.request, request);
 
   return select;
+}
+
+
+int isRestDayAvailable( Search *search, char *idRoom ){
+  MYSQL *conn = connect_db();
+  MYSQL_RES *result;
+  MYSQL_ROW row;
+  char request[512];
+  char date[16];
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char time_slot[16] = "";
+  int isAvailable;
+
+  sprintf( date, "%d-%d-%d", search->date.year, search->date.month, search->date.day );
+  strcpy(time_slot, time_slots[ 1^search->time_slot ] ); // 1 XOR time_slot -> 1^0 = 1 and 1^1 = 0
+  // return "1" if a room is available at a date and a time slot, "0" if not
+  sprintf(request, "SELECT IF(\
+  	(SELECT COUNT(time_slot) FROM BOOKING\
+  	WHERE room = %s\
+  	AND date_booking = '%s'\
+  	AND time_slot = '%s'\
+  	AND state = 1) > 0, 0, 1\
+  ) AS Q", idRoom, date, time_slot );
+
+  result = query(conn, request);
+  if( (row = mysql_fetch_row(result)) != NULL )
+    isAvailable = (int)strtol(*row, NULL, 10);  // str to long in base 10
+  else
+    isAvailable = -1;
+
+  mysql_free_result(result);
+  mysql_close(conn);
+
+  return isAvailable;
 }
 
 

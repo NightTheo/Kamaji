@@ -84,11 +84,14 @@ void getEquipmentsCheckbox(GtkWidget *widget,gpointer data);
 void getDrinksCheckbox(GtkWidget *widget,gpointer data);
 MysqlSelect findAvailableRooms(Search *search);
 int *getRoomsEquipment(char *idRoom);
+int isRestDayAvailable( Search *search, char *idRoom );
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
 RoomGtkBox *newRoomAvailable(MYSQL_ROW row);
 void displayRoomEquipments(RoomGtkBox *room, char *idRoom);
+void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search);
+void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search);
 
 // PRINT
 void printSearchParameter(Search *seach);

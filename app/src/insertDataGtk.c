@@ -95,11 +95,12 @@ void displayRoomEquipments(RoomGtkBox *room, char *idRoom){
       gtk_widget_show ( GTK_WIDGET( room->equipments[i] ) );
     else
       gtk_widget_hide ( GTK_WIDGET( room->equipments[i] ) );
-
   }
 
   free(equipments);
 }
+
+// ------------------------
 
 int *getRoomsEquipment(char *idRoom){
   // equipment
@@ -127,5 +128,52 @@ int *getRoomsEquipment(char *idRoom){
 
   return equipments;
 }
+
+// ----------------------
+
+void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search){
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char idTimeSlot[4];
+  sprintf( idTimeSlot, "%d", search->time_slot);
+
+  if( search->time_slot != 2 && isRestDayAvailable( search, idRoom ) ){ // available the rest of the day
+    gtk_combo_box_set_active_id (GTK_COMBO_BOX(room->bookingTimeSlotComboBox), idTimeSlot );
+    gtk_widget_show( GTK_WIDGET( room->bookingTimeSlotComboBox ) );
+  }else if(search->time_slot != 2){
+      gtk_combo_box_text_remove_all (room->bookingTimeSlotComboBox);
+      gtk_combo_box_text_append(room->bookingTimeSlotComboBox, idTimeSlot, time_slots[search->time_slot] );
+      gtk_combo_box_set_active_id (GTK_COMBO_BOX(room->bookingTimeSlotComboBox), idTimeSlot );
+    }
+}
+
+// ------------------------
+
+void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search){
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char idTimeSlot[4];
+  char timeSlot[16];
+  sprintf( idTimeSlot, "%d", search->time_slot);
+
+  if( search->time_slot == 2 || isRestDayAvailable( search, idRoom ) )
+    strcpy( timeSlot, time_slots[2] );
+  else{
+    strcpy( timeSlot, time_slots[ search->time_slot ] );
+  }
+  gtk_label_set_text( room->timeSlotLabel, timeSlot );
+
+}
+
+// ------------------------
+
+
+
+
+
+
+
+
+
+
+
 
 //
