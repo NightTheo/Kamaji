@@ -24,6 +24,19 @@ typedef struct Calendar{
   int id_room;
   Date date;
   int time_slot;
+
+  GtkLabel *week;
+  GtkButton *nav[2];
+  GtkLabel *days[5];
+  GtkButton *buttonsBooking[2][5];
+
+  GtkLabel *room;
+  GtkLabel *place;
+  GtkLabel *dateLabel;
+  GtkLabel *timeSlotLabel;
+  GtkLabel *price;
+  GtkImage *equipments[4];
+
 } Calendar;
 
 
@@ -76,7 +89,7 @@ void open_new_res_window(GtkWidget *widget, gpointer data);
 void open_place_room_window(GtkWidget *widget,gpointer data);
 void open_equipment_window(Session *session);
 void open_drink_window(Session *session);
-void open_planning_window(GtkWidget *widget,gpointer data);
+void open_planning_window(Session *session);
 void open_rooms_available_window(Session *session);
 void open_drink_window_2(GtkWidget *Widget,gpointer data);
 void open_reservations_window2(GtkWidget *widget,gpointer data);
@@ -90,6 +103,8 @@ int *getRoomsEquipment(char *idRoom);
 int isRestDayAvailable( Search *search, char *idRoom );
 Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom );
 int getPriceDrinks(Search *search);
+void getIdRoom(GtkWidget *widget, gpointer data);
+oid getCalendarWidgets(Session *s)
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);

@@ -2654,7 +2654,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="lbl_planning_mon_nb">
+                  <object class="GtkLabel" id="lbl_planning_nb_0">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">16</property>
@@ -2668,7 +2668,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="lbl_planning_tue_nb">
+                  <object class="GtkLabel" id="lbl_planning_nb_1">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">17</property>
@@ -2682,7 +2682,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="lbl_planning_wed_nb">
+                  <object class="GtkLabel" id="lbl_planning_nb_2">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">18</property>
@@ -2696,7 +2696,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="lbl_planning_thu_nb">
+                  <object class="GtkLabel" id="lbl_planning_nb_3">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">19</property>
@@ -2710,7 +2710,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="lbl_planning_fri_nb">
+                  <object class="GtkLabel" id="lbl_planning_nb_4">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">20</property>
@@ -2759,7 +2759,7 @@
                     <property name="can-focus">False</property>
                     <property name="spacing">17</property>
                     <child>
-                      <object class="GtkButton" id="button_planning_morning_mon">
+                      <object class="GtkButton" id="button_planning_morning_0">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2775,7 +2775,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_planning_morning_tue">
+                      <object class="GtkButton" id="button_planning_morning_1">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2791,7 +2791,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_planning_morning_wed">
+                      <object class="GtkButton" id="button_planning_morning_2">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2806,7 +2806,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_planning_morning_thu">
+                      <object class="GtkButton" id="button_planning_morning_3">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2822,7 +2822,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_planning_morning_fri">
+                      <object class="GtkButton" id="button_planning_morning_4">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2864,7 +2864,7 @@
                     <property name="can-focus">False</property>
                     <property name="spacing">17</property>
                     <child>
-                      <object class="GtkButton" id="button_planning_afternoon_mon">
+                      <object class="GtkButton" id="button_planning_afternoon_0">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2880,7 +2880,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_planning_afternoon_tue">
+                      <object class="GtkButton" id="button_planning_afternoon_1">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2896,7 +2896,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_planning_afternoon_wed">
+                      <object class="GtkButton" id="button_planning_afternoon_2">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2911,7 +2911,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_planning_afternoon_thu">
+                      <object class="GtkButton" id="button_planning_afternoon_3">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>
@@ -2926,7 +2926,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_planning_afternoon_fri">
+                      <object class="GtkButton" id="button_planning_afternoon_4">
                         <property name="label" translatable="yes"> </property>
                         <property name="width-request">78</property>
                         <property name="height-request">117</property>

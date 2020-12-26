@@ -83,8 +83,9 @@ void background_color( GtkWidget *widget, char *color ){
   gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(cssProvider),GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
-//##### NAVIGATION ####################################################
-
+//##############################################################################
+// ----------------------
+// RESERVATIONS
 
 void open_reservations_window(GtkWidget *widget,gpointer data){
   Session *session = data;
@@ -136,26 +137,7 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
   open_equipment_window(session);
 }
 
-
-// ----------------------
-//PLACE ROOM
-void open_place_room_window(GtkWidget *widget,gpointer data){
-  Session *session = data;
-  GtkComboBoxText *place, *room;
-
-  close_and_open_window(session,"window_place_room");
-  place = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(session->builder, "combo_place_room_place"));
-  room = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(session->builder, "combo_place_room_room"));
-  gtk_builder_connect_signals(session->builder, NULL);
-
-  // fill the comboBoxText with places from db
-  comboBoxTextFill( place,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
-  g_signal_connect( place,"changed",G_CALLBACK(fillComboBoxRooms),room);
-
-
-  click_button(session, "button_place_room", open_planning_window);
-}
-
+//##############################################################################
 // ----------------------
 // EQUIPMENTS
 void open_equipment_window(Session *session){
@@ -211,7 +193,7 @@ void getDrinksCheckbox(GtkWidget *widget,gpointer data){
   open_rooms_available_window(session);
 }
 
-
+//##############################################################################
 // ----------------------
 // ROOMS AVAILABLES
 
@@ -403,15 +385,89 @@ int isRestDayAvailable( Search *search, char *idRoom ){
   return isAvailable;
 }
 
+//##############################################################################
 // ----------------------
-//
-
-void open_planning_window(GtkWidget *Widget,gpointer data){
+//PLANNING
+void open_place_room_window(GtkWidget *widget,gpointer data){
   Session *session = data;
+  GtkComboBoxText *place, *room;
+
+  close_and_open_window(session,"window_place_room");
+  place = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(session->builder, "combo_place_room_place"));
+  room = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(session->builder, "combo_place_room_room"));
+  gtk_builder_connect_signals(session->builder, NULL);
+
+  // fill the comboBoxText with places from db
+  comboBoxTextFill( place,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
+  g_signal_connect( place,"changed",G_CALLBACK(fillComboBoxRooms),room);
+
+
+  click_button(session, "button_place_room", getIdRoom);
+}
+
+// ----------------------
+
+void getIdRoom(GtkWidget *widget, gpointer data){
+  Session *session = data;
+  GtkComboBox *room = GTK_COMBO_BOX( gtk_builder_get_object( session->builder, "combo_place_room_room" ) );
+  Calendar *calendar = malloc( sizeof(Calendar) );
+  if( calendar == NULL ) exit(1);
+
+  calendar->id_room = atoi( gtk_combo_box_get_active_id(room) );
+  session->calendar = calendar;
+  open_planning_window(session);
+}
+
+// ----------------------
+
+void open_planning_window(Session *session){
+  GtkWidget *planningContainer;
   close_and_open_window(session,"window_planning");
+
+  getCalendarWidgets(session);
+
+  planningContainer = GTK_WIDGET( gtk_builder_get_object(session->builder, "box_planning_planning") );
+  background_color(planningContainer, "#ffffff" );
+
+  
 
   click_button(session, "button_planning_next", open_drink_window_2);
 }
+
+// ----------------------
+
+void getCalendarWidgets(Session *s){
+  int i, j;
+  char id[32];
+  char time[2][16] = {"morning", "afternoon"};
+  char equipments[4][16] = {"whiteboard", "monitor", "projector", "camera"}
+  Calendar *c = session->calendar;
+
+  c->week = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_weeks") );
+  c->nav[0] = GTK_BUTTON( gtk_builder_get_object(s->builder, "button_planning_weeks_back") );
+  c->nav[1] = GTK_BUTTON( gtk_builder_get_object(s->builder, "button_planning_weeks_next") );
+
+  for(i = 0; i < 5; i++){ //days
+    sprintf(id, "lbl_planning_nb_%d", i);
+    c->days[i] = GTK_LABEL( gtk_builder_get_object(s->builder, id) );
+  }
+  for(i = 0; i < 2; i++) //buttonsBooking
+    for(j = 0; j < 5; j++){
+      sprintf(id, "button_planning_%s_%d",time[i], j);
+      c->buttonsBooking[i][j] = GTK_BUTTON( gtk_builder_get_object(s->builder, id) );
+    }
+  c->room = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_room") );
+  c->place = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_place") );
+  c->dateLabel = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_infos_date") );
+  c->timeSlotLabel = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_infos_time_slot") );
+  c->price = GTK_LABEL( gtk_builder_get_object(s->builder, "bl_planning_infos_price") );
+  for(i = 0; i < 4; i++){ // equipments
+    sprintf(id, "img_planning_%d", i);
+    c->equipments[i] = GTK_IMAGE( gtk_builder_get_object(s->builder, id) );
+  }
+}
+
+// ----------------------
 
 void open_drink_window_2(GtkWidget *Widget,gpointer data){
   Session *session = data;
@@ -420,11 +476,12 @@ void open_drink_window_2(GtkWidget *Widget,gpointer data){
   click_button(session, "button_drink_next", open_reservations_window2);
 }
 
+// ----------------------
+
 void open_reservations_window2(GtkWidget *widget,gpointer data){
   Session *session = data;
   close_and_open_window(session, "window_reservations");
 }
-
 
 
 // printf
