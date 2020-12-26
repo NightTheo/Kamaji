@@ -35,7 +35,7 @@ typedef struct Session{
 } Session;
 
 typedef struct Booking{
-  char *idRoom;
+  int idRoom;
   int nb_persons;
   double price;
   Date date;

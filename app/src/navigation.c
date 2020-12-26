@@ -255,10 +255,11 @@ Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){
   int priceHalfDay;
   double price = 0;
 
+
   booking = malloc( sizeof(Booking) );
   if( booking == NULL ) exit(1);
 
-  booking->idRoom = idRoom;
+  booking->idRoom = atoi( idRoom );
   booking->nb_persons = search->nb_persons;
   booking->date = search->date;
   for( int i = 0; i < 2; i++ )
@@ -315,11 +316,11 @@ void reserveRoom(GtkWidget *widget, gpointer data){
   char request[512];
 
   sprintf(request, "INSERT INTO BOOKING(nb_persons,price,date_booking,time_slot,state,room) \
-  VALUES(%d,%d,'%d-%d-%d','%s',1,%s) ;",\
+  VALUES(%d,%d,'%d-%d-%d','%s',1,%d) ;",\
   b->nb_persons, (int)b->price, b->date.year, b->date.month, b->date.day, time_slots[b->time_slot], b->idRoom );
 
   printf("%s\n", request);
-  //query(conn, request);
+  query(conn, request);
   mysql_close(conn);
 }
 
