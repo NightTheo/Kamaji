@@ -165,27 +165,35 @@ void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search){
 
 // ------------------------
 
-void planningNumbers(Session *session){
-  struct tm *today = session->today;
+void planningNumbers(Calendar *calendar, struct tm *date){
   int *startDate;
   int weekDay;
+
+  weekDay = date->tm_wday > 0 ? date->tm_wday -1 : 6 ; // s|m|t|w|t|f|s --> m|t|w|t|f|s|s   / format angl -> euro
+  if( weekDay < 5 ) // monday -> friday
+    startDate = moveInCalendar(date->tm_year + 1900,date->tm_mon, date->tm_mday, - weekDay);
+  else
+    startDate = moveInCalendar(date->tm_year + 1900,date->tm_mon, date->tm_mday, 7 - weekDay);
+
+  calendar->planning.year = startDate[0];
+  calendar->planning.month = startDate[1];
+  calendar->planning.day = startDate[2];
+  updatePlanningNumbers(startDate, calendar->days);
+
+  free(startDate);
+}
+
+void updatePlanningNumbers(int *startDate, GtkLabel *days[5]){
   char charNumber[4];
   int *intNumber;
   int i;
 
-  weekDay = today->tm_wday > 0 ? today->tm_wday -1 : 6 ; // s|m|t|w|t|f|s --> m|t|w|t|f|s|s   / format angl -> euro
-  if( weekDay < 5 ) // monday -> friday
-    startDate = moveInCalendar(today->tm_year,today->tm_mon, today->tm_mday, - weekDay);
-  else
-    startDate = moveInCalendar(today->tm_year,today->tm_mon, today->tm_mday, 7 - weekDay);
   for(i = 0; i < 5; i++){
     intNumber = moveInCalendar(startDate[0], startDate[1], startDate[2], i);
     sprintf(charNumber, "%d", intNumber[2] );
-    gtk_label_set_text( session->calendar->days[i], charNumber );
+    gtk_label_set_text( days[i], charNumber );
     free(intNumber);
   }
-
-  free(startDate);
 }
 
 /*
@@ -219,10 +227,10 @@ int *moveInCalendar(int year, int month, int day, int move){
 
   //move < 0
   while( day < 1 ){
+    if( month == 0 ) month = 12;
     day = daysInMonth[ month - 1 ] + day;
     month--;
-    if( month < 0){
-      month = 11;
+    if( month == 11){
       year--;
     }
   }
@@ -233,6 +241,49 @@ int *moveInCalendar(int year, int month, int day, int move){
 
 
 // ------------------------
+
+void click_button_planning(Session *session, char *idButton){
+  GtkWidget *button;
+  button = GTK_WIDGET(gtk_builder_get_object(session->builder, idButton));
+
+  g_signal_connect (button,"clicked",G_CALLBACK(planningChangeWeek),session);
+
+}
+
+void planningChangeWeek(GtkWidget *widget, gpointer data){
+  Session *session = data;
+  Date planning;
+  GtkWidget *prev;
+  int *startDate;
+  char *labelButton;
+  int move = 0;
+
+  planning = session->calendar->planning;
+  labelButton = (char*)gtk_button_get_label( GTK_BUTTON(widget) );
+
+  if( strcmp(labelButton, ">") == 0 )
+    move = 7;
+  else if(strcmp(labelButton, "<") == 0)
+    move = -7;
+  else
+    exit(1);
+
+  startDate = moveInCalendar( planning.year, planning.month, planning.day, move );
+  updatePlanningNumbers(startDate, session->calendar->days);
+
+  session->calendar->planning.year = startDate[0];
+  session->calendar->planning.month = startDate[1];
+  session->calendar->planning.day = startDate[2];
+
+  prev = GTK_WIDGET( gtk_builder_get_object(session->builder, "button_planning_weeks_back") );
+  if( planning.year <= session->today->tm_year + 1900 && planning.month <= session->today->tm_mon && planning.day <= session->today->tm_mday)
+    gtk_widget_hide(prev);
+  else
+    gtk_widget_show(prev);
+
+  free(startDate);
+}
+
 
 
 

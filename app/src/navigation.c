@@ -432,8 +432,11 @@ void open_planning_window(Session *session){
 
   close_and_open_window(session,"window_planning");
 
-  getCalendarWidgets(session);
-  planningNumbers(session);
+  getCalendarWidgets(session->calendar, session->builder);
+  planningNumbers(session->calendar, session->today);
+
+  click_button_planning(session, "button_planning_weeks_next");  // NEXT
+  click_button_planning(session, "button_planning_weeks_back"); // PREV
 
   stylePlanningRoom(session);
   click_button(session, "button_planning_next", open_drink_window_2);
@@ -441,34 +444,33 @@ void open_planning_window(Session *session){
 
 // ----------------------
 
-void getCalendarWidgets(Session *s){
+void getCalendarWidgets(Calendar *c, GtkBuilder *builder){
   int i, j;
   char id[32];
   char time[2][16] = {"morning", "afternoon"};
   char equipments[4][16] = {"whiteboard", "monitor", "projector", "camera"};
-  Calendar *c = s->calendar;
 
-  c->week = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_weeks") );
-  c->nav[0] = GTK_BUTTON( gtk_builder_get_object(s->builder, "button_planning_weeks_back") );
-  c->nav[1] = GTK_BUTTON( gtk_builder_get_object(s->builder, "button_planning_weeks_next") );
+  c->week = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_weeks") );
+  c->nav[0] = GTK_BUTTON( gtk_builder_get_object(builder, "button_planning_weeks_back") );
+  c->nav[1] = GTK_BUTTON( gtk_builder_get_object(builder, "button_planning_weeks_next") );
 
   for(i = 0; i < 5; i++){ //days
     sprintf(id, "lbl_planning_nb_%d", i);
-    c->days[i] = GTK_LABEL( gtk_builder_get_object(s->builder, id) );
+    c->days[i] = GTK_LABEL( gtk_builder_get_object(builder, id) );
   }
   for(i = 0; i < 2; i++) //buttonsBooking
     for(j = 0; j < 5; j++){
       sprintf(id, "button_planning_%s_%d",time[i], j);
-      c->buttonsBooking[i][j] = GTK_BUTTON( gtk_builder_get_object(s->builder, id) );
+      c->buttonsBooking[i][j] = GTK_BUTTON( gtk_builder_get_object(builder, id) );
     }
-  c->room = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_room") );
-  c->place = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_place") );
-  c->dateLabel = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_infos_date") );
-  c->timeSlotLabel = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_infos_time_slot") );
-  c->price = GTK_LABEL( gtk_builder_get_object(s->builder, "bl_planning_infos_price") );
+  c->room = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_room") );
+  c->place = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_place") );
+  c->dateLabel = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_infos_date") );
+  c->timeSlotLabel = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_infos_time_slot") );
+  c->price = GTK_LABEL( gtk_builder_get_object(builder, "bl_planning_infos_price") );
   for(i = 0; i < 4; i++){ // equipments
     sprintf(id, "img_planning_%d", i);
-    c->equipments[i] = GTK_IMAGE( gtk_builder_get_object(s->builder, id) );
+    c->equipments[i] = GTK_IMAGE( gtk_builder_get_object(builder, id) );
   }
 }
 
@@ -488,8 +490,7 @@ void open_reservations_window2(GtkWidget *widget,gpointer data){
   close_and_open_window(session, "window_reservations");
 }
 
-
-// printf
+// ----------------------
 
 void printSearchParameter(Search *search){
   int eq[4];
@@ -504,8 +505,7 @@ void printSearchParameter(Search *search){
   printf("Caffe: %d\nThe: %d\n",dr[0],dr[1]);
 }
 
-
-
+// ----------------------
 
 // STYLE
 void stylePlanningRoom(Session *session){
@@ -515,7 +515,7 @@ void stylePlanningRoom(Session *session){
   background_color(planningContainer, "#ffffff" );
 }
 
-
+// ----------------------
 
 
 

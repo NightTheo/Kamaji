@@ -1,6 +1,5 @@
 /*
-import_glade.h
-
+navigation.h
 */
 
 //Struct
@@ -22,6 +21,7 @@ typedef struct Search{
 
 typedef struct Calendar{
   int id_room;
+  Date planning;
   Date date;
   int time_slot;
 
@@ -105,7 +105,7 @@ int isRestDayAvailable( Search *search, char *idRoom );
 Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom );
 int getPriceDrinks(Search *search);
 void getIdRoom(GtkWidget *widget, gpointer data);
-void getCalendarWidgets(Session *s);
+void getCalendarWidgets(Calendar *c, GtkBuilder *builder);
 int *moveInCalendar(int year, int month, int day, int move);
 
 // SET DATA
@@ -115,7 +115,10 @@ void displayRoomEquipments(RoomGtkBox *room, char *idRoom);
 void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search);
 void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search);
 void reserveRoom(GtkWidget *widget, gpointer data);
-void planningNumbers(Session *session);
+void planningNumbers(Calendar *calendar, struct tm *date);
+void click_button_planning(Session *session, char *idButton);
+void updatePlanningNumbers(int *startDate, GtkLabel *days[5]);
+void planningChangeWeek(GtkWidget *widget, gpointer data);
 
 // PRINT
 void printSearchParameter(Search *seach);
