@@ -165,10 +165,74 @@ void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search){
 
 // ------------------------
 
+void planningNumbers(Session *session){
+  struct tm *today = session->today;
+  int *startDate;
+  int weekDay;
+  char charNumber[4];
+  int *intNumber;
+  int i;
+
+  weekDay = today->tm_wday > 0 ? today->tm_wday -1 : 6 ; // s|m|t|w|t|f|s --> m|t|w|t|f|s|s   / format angl -> euro
+  if( weekDay < 5 ) // monday -> friday
+    startDate = moveInCalendar(today->tm_year,today->tm_mon, today->tm_mday, - weekDay);
+  else
+    startDate = moveInCalendar(today->tm_year,today->tm_mon, today->tm_mday, 7 - weekDay);
+  for(i = 0; i < 5; i++){
+    intNumber = moveInCalendar(startDate[0], startDate[1], startDate[2], i);
+    sprintf(charNumber, "%d", intNumber[2] );
+    gtk_label_set_text( session->calendar->days[i], charNumber );
+    free(intNumber);
+  }
+
+  free(startDate);
+}
+
+/*
+month [ 0 - 11 ]
+day   [ 1 - 31 ]
+*/
+int *moveInCalendar(int year, int month, int day, int move){
+  int daysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  int *date;
+
+  date = malloc(sizeof(int) * 3);
+  if( date == NULL) exit(1);
+
+  date[0] = year; date[1] = month; date[2] = day;
+  if( !move ) return date;
+  if( month < 0 || month > 11 || day < 1 || day > 31 ) return NULL;
+
+  if( year % 400 == 0 || ( year % 100 != 0 && year % 4 == 0) )
+      daysInMonth[1] = 29;  // Leap year | année bissextile
+
+  day += move;
+  // move > 0
+  while( day > daysInMonth[ month ]){
+    day -= daysInMonth[ month ];
+    month++;
+    if( month > 11){
+      month = 0;
+      year++;
+    }
+  }
+
+  //move < 0
+  while( day < 1 ){
+    day = daysInMonth[ month - 1 ] + day;
+    month--;
+    if( month < 0){
+      month = 11;
+      year--;
+    }
+  }
+
+  date[0] = year; date[1] = month; date[2] = day;
+  return date;
+}
 
 
-
-
+// ------------------------
 
 
 

@@ -6,6 +6,7 @@ connet the signals for the navigation between the windows
 
 */
 
+#include <time.h>
 #include <gtk/gtk.h>
 #include "../inc/navigation.h"
 #include "../inc/insertDataGtk.h"
@@ -21,9 +22,16 @@ function: homekamaji
 Open Window_home
 */
 void open_home_window(char *idWindow){
-  Session *session = malloc(sizeof(Session));
+  time_t now;
+  Session *session;
+
+  session = malloc(sizeof(Session));
   if( session == NULL ) exit(1);
+
   newWindow(GLADE_FILE, idWindow, session);
+  time( &now );
+  session->today = localtime( &now ); // get the current date as tm struct
+
   click_button(session, "button_home_reservations", open_reservations_window);
   click_button(session, "button_home_search", open_new_res_window);
   click_button(session, "button_home_calendars", open_place_room_window);
@@ -421,16 +429,13 @@ void getIdRoom(GtkWidget *widget, gpointer data){
 // ----------------------
 
 void open_planning_window(Session *session){
-  GtkWidget *planningContainer;
+
   close_and_open_window(session,"window_planning");
 
   getCalendarWidgets(session);
+  planningNumbers(session);
 
-  planningContainer = GTK_WIDGET( gtk_builder_get_object(session->builder, "box_planning_planning") );
-  background_color(planningContainer, "#ffffff" );
-
-  
-
+  stylePlanningRoom(session);
   click_button(session, "button_planning_next", open_drink_window_2);
 }
 
@@ -440,8 +445,8 @@ void getCalendarWidgets(Session *s){
   int i, j;
   char id[32];
   char time[2][16] = {"morning", "afternoon"};
-  char equipments[4][16] = {"whiteboard", "monitor", "projector", "camera"}
-  Calendar *c = session->calendar;
+  char equipments[4][16] = {"whiteboard", "monitor", "projector", "camera"};
+  Calendar *c = s->calendar;
 
   c->week = GTK_LABEL( gtk_builder_get_object(s->builder, "lbl_planning_weeks") );
   c->nav[0] = GTK_BUTTON( gtk_builder_get_object(s->builder, "button_planning_weeks_back") );
@@ -502,8 +507,13 @@ void printSearchParameter(Search *search){
 
 
 
+// STYLE
+void stylePlanningRoom(Session *session){
+  GtkWidget *planningContainer;
 
-
+  planningContainer = GTK_WIDGET( gtk_builder_get_object(session->builder, "box_planning_planning") );
+  background_color(planningContainer, "#ffffff" );
+}
 
 
 

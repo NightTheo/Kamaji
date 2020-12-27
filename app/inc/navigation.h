@@ -45,6 +45,7 @@ typedef struct Session{
   GtkWindow *window;
   Search *search;
   Calendar *calendar;
+  struct tm *today;
 } Session;
 
 typedef struct Booking{
@@ -104,7 +105,8 @@ int isRestDayAvailable( Search *search, char *idRoom );
 Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom );
 int getPriceDrinks(Search *search);
 void getIdRoom(GtkWidget *widget, gpointer data);
-oid getCalendarWidgets(Session *s)
+void getCalendarWidgets(Session *s);
+int *moveInCalendar(int year, int month, int day, int move);
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
@@ -113,11 +115,13 @@ void displayRoomEquipments(RoomGtkBox *room, char *idRoom);
 void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search);
 void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search);
 void reserveRoom(GtkWidget *widget, gpointer data);
+void planningNumbers(Session *session);
 
 // PRINT
 void printSearchParameter(Search *seach);
 
-
+//STYLE
+void stylePlanningRoom(Session *session);
 
 
 
