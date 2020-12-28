@@ -281,7 +281,7 @@ void planningChangeWeek(GtkWidget *widget, gpointer data){
   session->calendar->planning.month = startDate[1];
   session->calendar->planning.day = startDate[2];
 
-  updateButtonsPlanning(session->calendar);
+  updateButtonsPlanning(session);
 
   free(startDate);
 }
@@ -330,23 +330,27 @@ void setRoomInfo(Calendar *calendar){
 
 // ------------------------
 
-void updateButtonsPlanning(Calendar *calendar){
+void updateButtonsPlanning(Session *session){
   char timeSlots[2][12] = {"8h - 14h", "14h - 20h"};
   char date[16];
   char idRoom[4];
-  int *startDate;
   int i, j;
   int isAvailable;
+  Calendar *calendar = session->calendar;
   Date planning = calendar->planning;
   GtkWidget *button;
 
   sprintf(idRoom, "%d", calendar->id_room);
   for(i = 0; i < 2; i++){
     for(j = 0; j < 5; j++){
-      startDate = moveInCalendar(planning.year, planning.month, planning.day, j);
+      button = GTK_WIDGET(calendar->buttonsBooking[i][j]);
+      g_signal_connect(button, "clicked", G_CALLBACK(chooseTimeSlot), session );
+      background_color(button, "#ffffff");
+
+      int *startDate = moveInCalendar(planning.year, planning.month, planning.day, j);
       sprintf(date, "%d-%d-%d", startDate[0], startDate[1]+1, startDate[2]);
       isAvailable = isTimeSlotAvailable(timeSlots[i], date, idRoom);
-      button = GTK_WIDGET(calendar->buttonsBooking[i][j]);
+
       if( isAvailable == 1 ){
         gtk_widget_set_opacity( button, 1 );
         gtk_widget_set_sensitive( button, TRUE );
@@ -358,13 +362,26 @@ void updateButtonsPlanning(Calendar *calendar){
         printf("Error\n");
         exit(0);
       }
-
       free(startDate);
     }
   }
 }
 
 
+
+void updateTimeSlotLabels(Session *session){
+  Calendar *c = session->calendar;
+  char days[5][8] = {"Lun", "Mar", "Mer", "Jeu", "Ven"};
+  char months[12][8] = {"janv", "fev", "mars", "avr", "mai", "juin",\
+                        "juill", "aout", "sept", "oct", "nov", "dec"};
+  char date[20];
+  char timeSlots[2][12] = {"8h - 14h", "14h - 20h"};
+
+  sprintf(date, "%s %d %s %d", days[c->wDaySelected], c->daySelected.day, months[c->daySelected.month -1], c->daySelected.year);
+  gtk_label_set_text(c->dateLabel, date);
+  gtk_label_set_text(c->timeSlotLabel, timeSlots[c->timeSlotSelected]);
+
+}
 
 
 

@@ -145,6 +145,7 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
   open_equipment_window(session);
 }
 
+
 //##############################################################################
 // ----------------------
 // EQUIPMENTS
@@ -200,6 +201,7 @@ void getDrinksCheckbox(GtkWidget *widget,gpointer data){
 
   open_rooms_available_window(session);
 }
+
 
 //##############################################################################
 // ----------------------
@@ -437,14 +439,14 @@ void getIdRoom(GtkWidget *widget, gpointer data){
 // ----------------------
 
 void open_planning_window(Session *session){
-  
+
   close_and_open_window(session,"window_planning");
 
   getCalendarWidgets(session->calendar, session->builder);
   planningNumbers(session->calendar, session->today);
   setRoomInfo(session->calendar);
 
-  updateButtonsPlanning(session->calendar);
+  updateButtonsPlanning(session);
 
 
   click_button_planning(session, "button_planning_weeks_next");  // NEXT
@@ -489,9 +491,47 @@ void getCalendarWidgets(Calendar *c, GtkBuilder *builder){
 
 // ----------------------
 
+void chooseTimeSlot(GtkWidget *widget, gpointer data){
+  Session *session = data;
+  Calendar *calendar = session->calendar;
+  GtkButton *button = GTK_BUTTON( widget );
+  int *selected;
+  int timeSlot, day;
+  int i, j;
+
+  for(i = 0; i < 2; i++)
+    for(j = 0; j < 5; j++){
+      background_color( GTK_WIDGET(calendar->buttonsBooking[i][j]), "#ffffff" );
+      if( button == calendar->buttonsBooking[i][j]){
+        timeSlot = i;
+        day = j;
+      }
+    }
+
+  background_color( widget, "#444444" );
+
+  selected = moveInCalendar(calendar->planning.year, calendar->planning.month, calendar->planning.day, day);
+  calendar->daySelected.year = selected[0];
+  calendar->daySelected.month = selected[1] + 1;
+  calendar->daySelected.day = selected[2];
+  calendar->timeSlotSelected = timeSlot;
+  calendar->wDaySelected = day;
+
+  updateTimeSlotLabels(session);
+
+  free(selected);
+}
+
+// ----------------------
+
 void open_drink_window_2(GtkWidget *Widget,gpointer data){
   Session *session = data;
+  Calendar *c = session->calendar;
+
+
   close_and_open_window(session, "window_drink");
+
+  printf("%d/%d/%d : %d\n", c->daySelected.year, c->daySelected.month, c->daySelected.day, c->timeSlotSelected );
 
   click_button(session, "button_drink_next", open_reservations_window2);
 }
@@ -533,6 +573,23 @@ void stylePlanningRoom(Session *session){
 }
 
 // ----------------------
+
+
+// ----------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

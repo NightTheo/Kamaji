@@ -22,14 +22,14 @@ typedef struct Search{
 typedef struct Calendar{
   int id_room;
   Date planning;
-  Date date;
-  int time_slot;
+  Date daySelected;
+  int timeSlotSelected;
+  int wDaySelected;
 
   GtkLabel *week;
   GtkButton *nav[2];
   GtkLabel *days[5];
   GtkButton *buttonsBooking[2][5];
-
   GtkLabel *room;
   GtkLabel *place;
   GtkLabel *dateLabel;
@@ -122,8 +122,9 @@ void updatePlanningNumbers(int *startDate, GtkLabel *days[5]);
 void planningChangeWeek(GtkWidget *widget, gpointer data);
 void updateWeekLabel( int *startDate, GtkLabel *week);
 void setRoomInfo(Calendar *calendar);
-void updateButtonsPlanning(Calendar *calendar);
-
+void updateButtonsPlanning(Session *session);
+void chooseTimeSlot(GtkWidget *widget, gpointer data);
+void updateTimeSlotLabels(Session *session);
 
 // PRINT
 void printSearchParameter(Search *seach);
