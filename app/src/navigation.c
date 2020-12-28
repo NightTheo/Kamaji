@@ -224,7 +224,7 @@ void open_rooms_available_window(Session *session){
   select = findAvailableRooms(search);
   while ((row = mysql_fetch_row(select.result)) != NULL){
     room = newRoomAvailable(row);
-    displayRoomEquipments(room, row[0]);
+    displayRoomEquipments(room->equipments, row[0]);
     displayTimeSlotComboBox(room, row[0], search);
     displayTimeSlotLabel(room, row[0], search );
 
@@ -361,35 +361,43 @@ MysqlSelect findAvailableRooms(Search *s){
 // ----------------------
 
 int isRestDayAvailable( Search *search, char *idRoom ){
+  char date[16];
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char time_slot[16] = "";
+
+  sprintf( date, "%d-%d-%d", search->date.year, search->date.month, search->date.day );
+  strcpy(time_slot, time_slots[ 1^search->time_slot ] ); // 1 XOR time_slot -> 1^0 = 1 and 1^1 = 0
+
+  return isTimeSlotAvailable(time_slot, date, idRoom);
+}
+
+int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
+  int isAvailable;
   MYSQL *conn = connect_db();
   MYSQL_RES *result;
   MYSQL_ROW row;
   char request[512];
-  char date[16];
-  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
-  char time_slot[16] = "";
-  int isAvailable;
 
-  sprintf( date, "%d-%d-%d", search->date.year, search->date.month, search->date.day );
-  strcpy(time_slot, time_slots[ 1^search->time_slot ] ); // 1 XOR time_slot -> 1^0 = 1 and 1^1 = 0
   // return "1" if a room is available at a date and a time slot, "0" if not
   sprintf(request, "SELECT IF(\
   	(SELECT COUNT(time_slot) FROM BOOKING\
   	WHERE room = %s\
   	AND date_booking = '%s'\
   	AND time_slot = '%s'\
-  	AND state = 1) > 0, 0, 1\
+  	AND state = 1) > 0, -1, 1\
   ) AS Q", idRoom, date, time_slot );
 
   result = query(conn, request);
+
   if( (row = mysql_fetch_row(result)) != NULL )
-    isAvailable = (int)strtol(*row, NULL, 10);  // str to long in base 10
-  else
-    isAvailable = -1;
+    isAvailable = atoi(*row);
+  else{
+    printf("Error mysql: fetch == NULL in isTimeSlotAvailable\n");
+    exit(0);
+  }
 
   mysql_free_result(result);
   mysql_close(conn);
-
   return isAvailable;
 }
 
@@ -429,11 +437,15 @@ void getIdRoom(GtkWidget *widget, gpointer data){
 // ----------------------
 
 void open_planning_window(Session *session){
-
+  
   close_and_open_window(session,"window_planning");
 
   getCalendarWidgets(session->calendar, session->builder);
   planningNumbers(session->calendar, session->today);
+  setRoomInfo(session->calendar);
+
+  updateButtonsPlanning(session->calendar);
+
 
   click_button_planning(session, "button_planning_weeks_next");  // NEXT
   click_button_planning(session, "button_planning_weeks_back"); // PREV
@@ -467,11 +479,12 @@ void getCalendarWidgets(Calendar *c, GtkBuilder *builder){
   c->place = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_place") );
   c->dateLabel = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_infos_date") );
   c->timeSlotLabel = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_infos_time_slot") );
-  c->price = GTK_LABEL( gtk_builder_get_object(builder, "bl_planning_infos_price") );
+  c->price = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_infos_price") );
   for(i = 0; i < 4; i++){ // equipments
-    sprintf(id, "img_planning_%d", i);
+    sprintf(id, "img_planning_%s", equipments[i] );
     c->equipments[i] = GTK_IMAGE( gtk_builder_get_object(builder, id) );
   }
+
 }
 
 // ----------------------
@@ -510,9 +523,13 @@ void printSearchParameter(Search *search){
 // STYLE
 void stylePlanningRoom(Session *session){
   GtkWidget *planningContainer;
+  GtkWidget *locationContainer;
 
   planningContainer = GTK_WIDGET( gtk_builder_get_object(session->builder, "box_planning_planning") );
+  locationContainer = GTK_WIDGET( gtk_builder_get_object(session->builder, "box_planning_where") );
+
   background_color(planningContainer, "#ffffff" );
+  background_color(locationContainer, "#ffffff" );
 }
 
 // ----------------------

@@ -101,6 +101,7 @@ void getEquipmentsCheckbox(GtkWidget *widget,gpointer data);
 void getDrinksCheckbox(GtkWidget *widget,gpointer data);
 MysqlSelect findAvailableRooms(Search *search);
 int *getRoomsEquipment(char *idRoom);
+int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom);
 int isRestDayAvailable( Search *search, char *idRoom );
 Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom );
 int getPriceDrinks(Search *search);
@@ -111,7 +112,7 @@ int *moveInCalendar(int year, int month, int day, int move);
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
 RoomGtkBox *newRoomAvailable(MYSQL_ROW row);
-void displayRoomEquipments(RoomGtkBox *room, char *idRoom);
+void displayRoomEquipments(GtkImage *equipments[4], char *idRoom);
 void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search);
 void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search);
 void reserveRoom(GtkWidget *widget, gpointer data);
@@ -119,6 +120,10 @@ void planningNumbers(Calendar *calendar, struct tm *date);
 void click_button_planning(Session *session, char *idButton);
 void updatePlanningNumbers(int *startDate, GtkLabel *days[5]);
 void planningChangeWeek(GtkWidget *widget, gpointer data);
+void updateWeekLabel( int *startDate, GtkLabel *week);
+void setRoomInfo(Calendar *calendar);
+void updateButtonsPlanning(Calendar *calendar);
+
 
 // PRINT
 void printSearchParameter(Search *seach);
