@@ -97,7 +97,16 @@ void background_color( GtkWidget *widget, char *color ){
 
 void open_reservations_window(GtkWidget *widget,gpointer data){
   Session *session = data;
+  int sDrinks[2];
+  int pDrinks[2];
   close_and_open_window(session,"window_reservations");
+
+  for(int i = 0; i < 2; i++){
+    //sDrinks[i] = session->search->drinks[i];
+    pDrinks[i] = session->calendar->drinks[i];
+  }
+  //printf("Search:\nCaffe: %d | The: %d\n", sDrinks[0], sDrinks[1]);
+  printf("Planning:\nCaffe: %d | The: %d\n", pDrinks[0], pDrinks[1]);
 }
 
 // ----------------------
@@ -181,11 +190,11 @@ void getEquipmentsCheckbox(GtkWidget *widget,gpointer data){
 // DRINK
 void open_drink_window(Session *session){
   close_and_open_window(session, "window_drink");
-  click_button(session, "button_drink_next", getDrinksCheckbox);
+  click_button(session, "button_drink_next", getSearchDrinksCheckbox);
 }
 // ----------------------
 
-void getDrinksCheckbox(GtkWidget *widget,gpointer data){
+void getSearchDrinksCheckbox(GtkWidget *widget,gpointer data){
   Session *session = data;
   Search *search = session->search;
   int drinks[2] = {0};
@@ -232,7 +241,7 @@ void open_rooms_available_window(Session *session){
 
     booking = prepareBooking(search, room, row[0]);
     booking->session = session;
-    g_signal_connect (room->bookingButton,"clicked",G_CALLBACK(reserveRoom),booking);
+    g_signal_connect (room->bookingButton,"clicked",G_CALLBACK(reserveRoomBySearch),booking);
     gtk_container_add ( listContainer, GTK_WIDGET(room->box) );
   }
   mysql_free_result(select.result);
@@ -246,7 +255,7 @@ Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){
   GtkComboBox *timeSlotComboBox;
   int priceHalfDay;
   double price = 0;
-
+  int drinks[2];
 
   booking = malloc( sizeof(Booking) );
   if( booking == NULL ) exit(1);
@@ -261,7 +270,8 @@ Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){
   timeSlotComboBox = GTK_COMBO_BOX( gtk_builder_get_object(room->builder, "combo_available_list_element_when") );
   booking->time_slot = atoi( gtk_combo_box_get_active_id(timeSlotComboBox) );
 
-  price += getPriceDrinks(search);
+  for(int i = 0; i < 2; i++) drinks[i] = search->drinks[i];
+  price += getPriceDrinks(drinks, search->id_place);
 
   priceHalfDay = atoi( gtk_label_get_text(room->priceHalfDay) );
   price += search->time_slot == 2 ? priceHalfDay * 2 : priceHalfDay ;
@@ -272,20 +282,20 @@ Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){
 
 //
 
-int getPriceDrinks(Search *search){
+int getPriceDrinks(int drinks[2], int idPlace){
   int price = 0;
   char request[512];
   MYSQL *conn = connect_db();
   MYSQL_ROW row;
 
   for(int i = 0; i < 2; i++){
-    if( search->drinks[i] == 1 ){
+    if( drinks[i] == 1 ){
       MYSQL_RES *result;
       sprintf(request, "SELECT ppd.price FROM ROOM as R\
       INNER JOIN PLACE as P on R.place = P.id\
       INNER JOIN _place_propose_drink as ppd on ppd.place = P.id\
       WHERE ppd.place = %d AND ppd.drink = %d\
-      GROUP BY P.id", search->id_place, search->drinks[i]);
+      GROUP BY P.id", idPlace, drinks[i]);
       result = query(conn, request);
       if((row = mysql_fetch_row(result)) != NULL)
         price += atoi(*row);
@@ -300,7 +310,7 @@ int getPriceDrinks(Search *search){
 
 // ----------------------
 
-void reserveRoom(GtkWidget *widget, gpointer data){
+void reserveRoomBySearch(GtkWidget *widget, gpointer data){
   Booking *b = data;
   Session *session = b->session;
   MYSQL *conn = connect_db();
@@ -311,8 +321,11 @@ void reserveRoom(GtkWidget *widget, gpointer data){
   VALUES(%d,%d,'%d-%d-%d','%s',1,%d) ;",\
   b->nb_persons, (int)b->price, b->date.year, b->date.month, b->date.day, time_slots[b->time_slot], b->idRoom );
 
+  //add in _booking_include_drink
+
   query(conn, request);
   mysql_close(conn);
+  free(b);
 
   open_reservations_window(NULL, session);
 }
@@ -362,15 +375,15 @@ MysqlSelect findAvailableRooms(Search *s){
 
 // ----------------------
 
-int isRestDayAvailable( Search *search, char *idRoom ){
-  char date[16];
+int isRestDayAvailable( Date date, int time_slot_int, char *idRoom ){
+  char dateString[16];
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
   char time_slot[16] = "";
 
-  sprintf( date, "%d-%d-%d", search->date.year, search->date.month, search->date.day );
-  strcpy(time_slot, time_slots[ 1^search->time_slot ] ); // 1 XOR time_slot -> 1^0 = 1 and 1^1 = 0
+  sprintf( dateString, "%d-%d-%d", date.year, date.month, date.day );
+  strcpy(time_slot, time_slots[ 1^time_slot_int ] ); // 1 XOR time_slot -> 1^0 = 1 and 1^1 = 0
 
-  return isTimeSlotAvailable(time_slot, date, idRoom);
+  return isTimeSlotAvailable(time_slot, dateString, idRoom);
 }
 
 int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
@@ -427,26 +440,29 @@ void open_place_room_window(GtkWidget *widget,gpointer data){
 
 void getIdRoom(GtkWidget *widget, gpointer data){
   Session *session = data;
+  GtkComboBox *place = GTK_COMBO_BOX( gtk_builder_get_object( session->builder, "combo_place_room_place" ) );
   GtkComboBox *room = GTK_COMBO_BOX( gtk_builder_get_object( session->builder, "combo_place_room_room" ) );
   Calendar *calendar = malloc( sizeof(Calendar) );
   if( calendar == NULL ) exit(1);
 
   calendar->id_room = atoi( gtk_combo_box_get_active_id(room) );
+  calendar->id_place = atoi( gtk_combo_box_get_active_id(place) );
   session->calendar = calendar;
+
+
   open_planning_window(session);
 }
 
 // ----------------------
 
 void open_planning_window(Session *session){
-
   close_and_open_window(session,"window_planning");
 
   getCalendarWidgets(session->calendar, session->builder);
   planningNumbers(session->calendar, session->today);
   setRoomInfo(session->calendar);
 
-  updateButtonsPlanning(session);
+  updateButtonsPlanning(session->calendar, session->today);
 
 
   click_button_planning(session, "button_planning_weeks_next");  // NEXT
@@ -465,9 +481,6 @@ void getCalendarWidgets(Calendar *c, GtkBuilder *builder){
   char equipments[4][16] = {"whiteboard", "monitor", "projector", "camera"};
 
   c->week = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_weeks") );
-  c->nav[0] = GTK_BUTTON( gtk_builder_get_object(builder, "button_planning_weeks_back") );
-  c->nav[1] = GTK_BUTTON( gtk_builder_get_object(builder, "button_planning_weeks_next") );
-
   for(i = 0; i < 5; i++){ //days
     sprintf(id, "lbl_planning_nb_%d", i);
     c->days[i] = GTK_LABEL( gtk_builder_get_object(builder, id) );
@@ -476,6 +489,7 @@ void getCalendarWidgets(Calendar *c, GtkBuilder *builder){
     for(j = 0; j < 5; j++){
       sprintf(id, "button_planning_%s_%d",time[i], j);
       c->buttonsBooking[i][j] = GTK_BUTTON( gtk_builder_get_object(builder, id) );
+      g_signal_connect(c->buttonsBooking[i][j], "clicked", G_CALLBACK(chooseTimeSlot), c );
     }
   c->room = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_room") );
   c->place = GTK_LABEL( gtk_builder_get_object(builder, "lbl_planning_place") );
@@ -486,14 +500,15 @@ void getCalendarWidgets(Calendar *c, GtkBuilder *builder){
     sprintf(id, "img_planning_%s", equipments[i] );
     c->equipments[i] = GTK_IMAGE( gtk_builder_get_object(builder, id) );
   }
-
+  c->timeSlotCombo = GTK_COMBO_BOX_TEXT( gtk_builder_get_object(builder, "combo_planning_when") );
+  g_signal_connect(c->timeSlotCombo, "changed", G_CALLBACK(onTimeSlotPlanningChanged), c);
+  c->next = GTK_BUTTON( gtk_builder_get_object(builder, "button_planning_next") );
 }
 
 // ----------------------
 
 void chooseTimeSlot(GtkWidget *widget, gpointer data){
-  Session *session = data;
-  Calendar *calendar = session->calendar;
+  Calendar *calendar = data;
   GtkButton *button = GTK_BUTTON( widget );
   int *selected;
   int timeSlot, day;
@@ -517,9 +532,68 @@ void chooseTimeSlot(GtkWidget *widget, gpointer data){
   calendar->timeSlotSelected = timeSlot;
   calendar->wDaySelected = day;
 
-  updateTimeSlotLabels(session);
+  updateTimeSlotComboPlanning(calendar);
+  gtk_widget_set_opacity( GTK_WIDGET(calendar->next), 1 );
+  gtk_widget_set_sensitive( GTK_WIDGET(calendar->next), TRUE );
+
+  updateTimeSlotLabels(calendar);
 
   free(selected);
+}
+
+// ----------------------
+
+void updateTimeSlotComboPlanning(Calendar *calendar){
+  char timeSlots[3][16] = {"Matin", "Après-midi", "Journée"};
+  char id[3][4] = {"0", "1", "2"};
+  char idRoom[4];
+  int i;
+  int timeSlot= calendar->timeSlotSelected;
+
+  gtk_combo_box_text_remove_all (calendar->timeSlotCombo);
+
+  sprintf(idRoom, "%d", calendar->id_room);
+  if( isRestDayAvailable( calendar->daySelected, timeSlot, idRoom) == 1 ){
+    for(i = 0; i < 3; i++)
+      gtk_combo_box_text_append(calendar->timeSlotCombo,id[i], timeSlots[i]);
+    gtk_combo_box_set_active_id (GTK_COMBO_BOX(calendar->timeSlotCombo), id[timeSlot]);
+  }else{
+    gtk_combo_box_text_append(calendar->timeSlotCombo,id[timeSlot], timeSlots[timeSlot]);
+    gtk_combo_box_set_active_id (GTK_COMBO_BOX(calendar->timeSlotCombo), id[timeSlot]);
+  }
+
+  gtk_widget_set_opacity( GTK_WIDGET(calendar->timeSlotCombo), 1 );
+  gtk_widget_set_sensitive( GTK_WIDGET(calendar->timeSlotCombo), TRUE );
+
+}
+
+// ----------------------
+
+void onTimeSlotPlanningChanged(GtkWidget *widget, gpointer data){
+  Calendar *c = data;
+  GtkComboBox *combo = GTK_COMBO_BOX(widget);
+  int id;
+
+  if( gtk_combo_box_get_active_id(combo) != NULL){
+    id = atoi(gtk_combo_box_get_active_id(combo));
+    c->timeSlotSelected = id;
+    if( id < 2){
+      background_color_if_sensitive( GTK_WIDGET(c->buttonsBooking[id][c->wDaySelected]), "#444444" );
+      background_color_if_sensitive( GTK_WIDGET(c->buttonsBooking[1^id][c->wDaySelected]), "#ffffff" );
+    }
+    else
+      for(int i = 0; i < 2; i++)
+        background_color_if_sensitive( GTK_WIDGET(c->buttonsBooking[i][c->wDaySelected]), "#444444" );
+
+  }
+
+}
+
+// ----------------------
+
+void background_color_if_sensitive(GtkWidget *widget, char* color){
+  if( (int)gtk_widget_is_sensitive (widget) )
+    background_color( widget, color );
 }
 
 // ----------------------
@@ -533,15 +607,95 @@ void open_drink_window_2(GtkWidget *Widget,gpointer data){
 
   printf("%d/%d/%d : %d\n", c->daySelected.year, c->daySelected.month, c->daySelected.day, c->timeSlotSelected );
 
-  click_button(session, "button_drink_next", open_reservations_window2);
+  click_button(session, "button_drink_next", getPlanningDrinksCheckbox);
 }
 
 // ----------------------
 
-void open_reservations_window2(GtkWidget *widget,gpointer data){
-  Session *session = data;
-  close_and_open_window(session, "window_reservations");
+void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data){
+  Session *s = data;
+  Calendar *calendar = s->calendar;
+  Booking *booking;
+  int drinks[2] = {0};
+
+  GtkCheckButton *checkCoffee = GTK_CHECK_BUTTON(gtk_builder_get_object(s->builder, "check_drink_coffee"));
+  GtkCheckButton *checkTea = GTK_CHECK_BUTTON(gtk_builder_get_object(s->builder, "check_drink_tea"));
+
+  drinks[0] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkCoffee) );
+  drinks[1] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkTea ) );
+
+  for(int i = 0; i < 2; i++)
+    s->calendar->drinks[i] = drinks[i];
+
+  //
+  booking = prepareBookingPlanning(*calendar);
+  reserveRoomByPlanning(booking);
+
+
+  open_reservations_window(NULL, s);
 }
+
+// ----------------------
+
+Booking *prepareBookingPlanning(Calendar c){
+  Booking *booking;
+  int priceHalfDay;
+  double price = 0;
+  int drinks[2];
+
+  booking = malloc( sizeof(Booking) );
+  if( booking == NULL ) exit(1);
+
+  booking->idRoom = c.id_room;
+  booking->nb_persons = 1;        // get the nb of persons ???
+  booking->time_slot = c.timeSlotSelected;
+  booking->date = c.daySelected;
+  for(int i = 0; i < 2; i++) booking->drinks[i] = c.drinks[i];
+
+  priceHalfDay = getPriceRoom(c.id_room);
+  price += c.timeSlotSelected < 2 ? priceHalfDay : 2 * priceHalfDay;
+
+  for(int i = 0; i < 2; i++) drinks[i] = c.drinks[i];
+  price += getPriceDrinks(drinks, c.id_place);
+
+  booking->price = price;
+
+  return booking;
+}
+
+unsigned int getPriceRoom(int idRoom){
+  MYSQL *conn = connect_db();
+  MYSQL_RES *result;
+  MYSQL_ROW row;
+  char request[512];
+  unsigned int price = 0;
+
+  sprintf(request, "select price_half_day from ROOM where id = %d", idRoom);
+  result = query(conn, request);
+  if((row = mysql_fetch_row(result)) != NULL)
+    price = atoi(*row);
+
+  mysql_free_result(result);
+  mysql_close(conn);
+
+  return price;
+}
+
+void reserveRoomByPlanning(Booking *b){
+  Session *session = b->session;
+  MYSQL *conn = connect_db();
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char request[512];
+
+  sprintf(request, "INSERT INTO BOOKING(nb_persons,price,date_booking,time_slot,state,room) \
+  VALUES(%d,%d,'%d-%d-%d','%s',1,%d) ;",\
+  b->nb_persons, (int)b->price, b->date.year, b->date.month, b->date.day, time_slots[b->time_slot], b->idRoom );
+
+  query(conn, request);
+  mysql_close(conn);
+  free(b);
+}
+
 
 // ----------------------
 

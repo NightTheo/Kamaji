@@ -16,13 +16,16 @@ void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *firstRow, char *requ
   gtk_combo_box_text_remove_all (comboBoxText);
 
   //Add the first row
-  gtk_combo_box_text_append(comboBoxText,"0", firstRow);
-  gtk_combo_box_set_active_id (GTK_COMBO_BOX(comboBoxText), "0");
+  if(firstRow != NULL){
+    gtk_combo_box_text_append(comboBoxText,"0", firstRow);
+    gtk_combo_box_set_active_id (GTK_COMBO_BOX(comboBoxText), "0");
+  }
 
   result = query(conn, request);
 
   while ((row = mysql_fetch_row(result)) != NULL)
     gtk_combo_box_text_append ( comboBoxText, row[0], row[1]);
+
 
   mysql_free_result(result);
   mysql_close(conn);
@@ -136,7 +139,7 @@ void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search){
   char idTimeSlot[4];
   sprintf( idTimeSlot, "%d", search->time_slot);
 
-  if( search->time_slot != 2 && isRestDayAvailable( search, idRoom ) == 1 ){ // available the rest of the day
+  if( search->time_slot != 2 && isRestDayAvailable( search->date, search->time_slot, idRoom ) == 1 ){ // available the rest of the day
     gtk_combo_box_set_active_id (GTK_COMBO_BOX(room->bookingTimeSlotComboBox), idTimeSlot );
     gtk_widget_show( GTK_WIDGET( room->bookingTimeSlotComboBox ) );
   }else if(search->time_slot != 2){
@@ -154,7 +157,7 @@ void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search){
   char timeSlot[16];
   sprintf( idTimeSlot, "%d", search->time_slot);
 
-  if( search->time_slot == 2 || isRestDayAvailable( search, idRoom ) == 1 )
+  if( search->time_slot == 2 || isRestDayAvailable( search->date, search->time_slot, idRoom ) == 1 )
     strcpy( timeSlot, time_slots[2] );
   else{
     strcpy( timeSlot, time_slots[ search->time_slot ] );
@@ -281,7 +284,7 @@ void planningChangeWeek(GtkWidget *widget, gpointer data){
   session->calendar->planning.month = startDate[1];
   session->calendar->planning.day = startDate[2];
 
-  updateButtonsPlanning(session);
+  updateButtonsPlanning(session->calendar, session->today);
 
   free(startDate);
 }
@@ -293,7 +296,7 @@ void updateWeekLabel( int *startDate, GtkLabel *week){
   char weekLabel[32];
   int *endDate;
 
-  endDate = moveInCalendar(startDate[0], startDate[1], startDate[2], 5 );
+  endDate = moveInCalendar(startDate[0], startDate[1], startDate[2], 4 );
   sprintf(weekLabel, "%d %s - %d %s %d",startDate[2],months[startDate[1]],endDate[2],months[endDate[1]], endDate[0] );
   gtk_label_set_text(week, weekLabel);
 
@@ -330,13 +333,12 @@ void setRoomInfo(Calendar *calendar){
 
 // ------------------------
 
-void updateButtonsPlanning(Session *session){
+void updateButtonsPlanning( Calendar *calendar, struct tm *td){
   char timeSlots[2][12] = {"8h - 14h", "14h - 20h"};
   char date[16];
   char idRoom[4];
   int i, j;
   int isAvailable;
-  Calendar *calendar = session->calendar;
   Date planning = calendar->planning;
   GtkWidget *button;
 
@@ -344,44 +346,74 @@ void updateButtonsPlanning(Session *session){
   for(i = 0; i < 2; i++){
     for(j = 0; j < 5; j++){
       button = GTK_WIDGET(calendar->buttonsBooking[i][j]);
-      g_signal_connect(button, "clicked", G_CALLBACK(chooseTimeSlot), session );
       background_color(button, "#ffffff");
 
       int *startDate = moveInCalendar(planning.year, planning.month, planning.day, j);
       sprintf(date, "%d-%d-%d", startDate[0], startDate[1]+1, startDate[2]);
       isAvailable = isTimeSlotAvailable(timeSlots[i], date, idRoom);
 
-      if( isAvailable == 1 ){
-        gtk_widget_set_opacity( button, 1 );
-        gtk_widget_set_sensitive( button, TRUE );
-      }
-      else if( isAvailable == -1 ){
-        gtk_widget_set_opacity( button, 0 );
-        gtk_widget_set_sensitive( button, FALSE );
-      }else{
-        printf("Error\n");
-        exit(0);
-      }
+      if(startDate[0] <= td->tm_year + 1900 && startDate[1]  <= td->tm_mon && startDate[2]  <= td->tm_mday)
+        isAvailable = -1;
+
+      showOrHidePlanningButton(isAvailable, button);
       free(startDate);
     }
   }
 }
 
+void showOrHidePlanningButton(int isAvailable, GtkWidget *button){
+  if( isAvailable == 1 ){
+    gtk_widget_set_opacity( button, 1 );
+    gtk_widget_set_sensitive( button, TRUE );
+  }
+  else if( isAvailable == -1 ){
+    gtk_widget_set_opacity( button, 0 );
+    gtk_widget_set_sensitive( button, FALSE );
+  }else{
+    printf("Error\n");
+    exit(0);
+  }
+}
 
+// ------------------------
 
-void updateTimeSlotLabels(Session *session){
-  Calendar *c = session->calendar;
+void updateTimeSlotLabels(Calendar *c){
   char days[5][8] = {"Lun", "Mar", "Mer", "Jeu", "Ven"};
   char months[12][8] = {"janv", "fev", "mars", "avr", "mai", "juin",\
                         "juill", "aout", "sept", "oct", "nov", "dec"};
   char date[20];
-  char timeSlots[2][12] = {"8h - 14h", "14h - 20h"};
+  char timeSlots[3][12] = {"8h - 14h", "14h - 20h", "8h - 20h"};
 
   sprintf(date, "%s %d %s %d", days[c->wDaySelected], c->daySelected.day, months[c->daySelected.month -1], c->daySelected.year);
   gtk_label_set_text(c->dateLabel, date);
   gtk_label_set_text(c->timeSlotLabel, timeSlots[c->timeSlotSelected]);
 
 }
+
+
+// ------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -3148,7 +3148,9 @@
                     <property name="width-request">216</property>
                     <property name="height-request">42</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
+                    <property name="opacity">0</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="active-id">0</property>
@@ -3170,8 +3172,10 @@
                     <property name="width-request">216</property>
                     <property name="height-request">42</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="opacity">0</property>
                     <property name="halign">center</property>
                     <property name="relief">half</property>
                   </object>
