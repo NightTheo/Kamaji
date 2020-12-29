@@ -1,4 +1,4 @@
-INSERT INTO EQUIPMENT(id,name,category) VALUES (1,'Vidéo projecteur','éléctronique');
+INSERT INTO EQUIPMENT(id,name,category) VALUES (1,'Ecran','éléctronique');
 INSERT INTO EQUIPMENT(id,name,category) VALUES (2,'Camera','éléctronique');
 INSERT INTO EQUIPMENT(id,name,category) VALUES (3,'WhiteBoard','support écriture');
 INSERT INTO EQUIPMENT(id,name,category) VALUES (4,'Video-projecteur','éléctronique');

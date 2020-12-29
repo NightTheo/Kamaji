@@ -87,7 +87,50 @@ RoomGtkBox * newRoomAvailable(MYSQL_ROW row){
   return room;
 }
 
+// ------------------------
 
+ReservationBox * newReservation(MYSQL_ROW row){
+  char location[64];
+  char price[8];
+  char equipments[4][16] = {"monitor","camera","whiteboard","projector"};
+  char id[32];
+  ReservationBox *reservation = malloc( sizeof(ReservationBox) );
+  if( reservation == NULL ) exit(1);
+
+  GtkBuilder *b = gtk_builder_new_from_file(GLADE_FILE);
+  reservation->box = GTK_BOX(gtk_builder_get_object(b, "box_reservation"));
+  reservation->locationLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_where"));
+  reservation->dateLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_when"));
+  reservation->timeSlotLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_time_slot"));
+  reservation->priceLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_price"));
+  for(int i = 0; i < 4; i++){
+    sprintf(id, "img_reservations_%s", equipments[i]);
+    reservation->equipments[i] = GTK_IMAGE(gtk_builder_get_object(b, id));
+  }
+  reservation->drinks[0] = GTK_IMAGE(gtk_builder_get_object(b, "img_reservations_coffee"));
+  reservation->drinks[1] = GTK_IMAGE(gtk_builder_get_object(b, "img_reservations_tea"));
+  reservation->edit = GTK_BUTTON(gtk_builder_get_object(b, "button_reservation_edit"));
+  reservation->delete = GTK_BUTTON(gtk_builder_get_object(b, "button_reservation_delete"));
+
+  sprintf(location, "%s - %s", row[2], row[3]); // Room name - Place name
+  sprintf(price, "%s€", row[5]);
+
+  gtk_label_set_text( reservation->locationLabel, location );
+  gtk_label_set_text( reservation->priceLabel, price );
+  setDateReservation( row[6], reservation->dateLabel ); // date
+  gtk_label_set_text( reservation->timeSlotLabel, row[7] ); // time slot
+  displayRoomEquipments( reservation->equipments, row[1] );
+  //displayReservationDrinks( reservation->drinks, row[0] );
+
+  //style
+  background_color( GTK_WIDGET(reservation->box) , "#FFFFFF");
+  return reservation;
+}
+/*
+void displayReservationDrinks(){
+
+}
+*/
 // ------------------------
 
 void displayRoomEquipments(GtkImage *equipments[4], char *idRoom){
@@ -151,18 +194,18 @@ void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search){
 
 // ------------------------
 
-void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search){
+void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slot){
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
   char idTimeSlot[4];
   char timeSlot[16];
-  sprintf( idTimeSlot, "%d", search->time_slot);
+  sprintf( idTimeSlot, "%d", time_slot);
 
-  if( search->time_slot == 2 || isRestDayAvailable( search->date, search->time_slot, idRoom ) == 1 )
+  if( time_slot == 2 || isRestDayAvailable( date, time_slot, idRoom ) == 1 )
     strcpy( timeSlot, time_slots[2] );
-  else{
-    strcpy( timeSlot, time_slots[ search->time_slot ] );
-  }
-  gtk_label_set_text( room->timeSlotLabel, timeSlot );
+  else
+    strcpy( timeSlot, time_slots[ time_slot ] );
+
+  gtk_label_set_text( label, timeSlot );
 }
 
 // ------------------------
@@ -390,24 +433,25 @@ void updateTimeSlotLabels(Calendar *c){
 
 }
 
+// ------------------------
+
+void setDateReservation(char *dateSQL, GtkLabel *label){
+  char months[12][8] = {"janv", "fev", "mars", "avr", "mai", "juin",\
+                        "juill", "aout", "sept", "oct", "nov", "dec"};
+  Date d;
+  char date[32];
+
+  sscanf(dateSQL, "%d-%d-%d", &d.year, &d.month, &d.day);
+  sprintf(date, "%d %s %d", d.day, months[d.month - 1], d.year);
+
+  gtk_label_set_text(label, date);
+}
 
 // ------------------------
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+// ------------------------
 
 
 

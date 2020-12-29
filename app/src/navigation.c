@@ -97,16 +97,52 @@ void background_color( GtkWidget *widget, char *color ){
 
 void open_reservations_window(GtkWidget *widget,gpointer data){
   Session *session = data;
-  int sDrinks[2];
-  int pDrinks[2];
-  close_and_open_window(session,"window_reservations");
+  GtkGrid *gridContainer;
+  ReservationBox *reservation;
+  MYSQL_ROW row;
+  MysqlSelect selectReservations;
+  int i = 0;
 
-  for(int i = 0; i < 2; i++){
-    //sDrinks[i] = session->search->drinks[i];
-    pDrinks[i] = session->calendar->drinks[i];
+  close_and_open_window(session,"window_reservations");
+  gridContainer = GTK_GRID( gtk_builder_get_object(session->builder, "grid_reservations") );
+  selectReservations = findReservationsInDB();
+
+  while ((row = mysql_fetch_row(selectReservations.result)) != NULL){
+    reservation = newReservation(row);
+
+    //connecter les deux boutons
+    g_signal_connect (reservation->edit,"clicked",G_CALLBACK(editReservation),session);
+    g_signal_connect (reservation->delete,"clicked",G_CALLBACK(deleteReservation),session);
+
+    gtk_grid_attach (gridContainer, GTK_WIDGET(reservation->box),i%2, i/2, 1, 1);
+    i++;
   }
-  //printf("Search:\nCaffe: %d | The: %d\n", sDrinks[0], sDrinks[1]);
-  printf("Planning:\nCaffe: %d | The: %d\n", pDrinks[0], pDrinks[1]);
+
+  mysql_free_result(selectReservations.result);
+  mysql_close(selectReservations.conn);
+}
+
+void editReservation(GtkWidget *widget,gpointer data){
+  printf("Coucou edit\n");
+}
+
+void deleteReservation(GtkWidget *widget,gpointer data){
+  printf("Coucou delete\n");
+}
+
+MysqlSelect findReservationsInDB(){
+  MysqlSelect select;
+
+  strcpy(select.request, "SELECT B.id, R.id, R.name, P.name, B.nb_persons, B.price, B.date_booking, B.time_slot \
+  FROM BOOKING as B\
+  INNER JOIN ROOM as R ON B.room = R.id\
+  INNER JOIN PLACE as P ON R.place = P.id\
+  WHERE B.state = 1 AND R.state = 1 AND P.state = 1");
+
+  select.conn = connect_db();
+  select.result = query(select.conn, select.request);
+
+  return select;
 }
 
 // ----------------------
@@ -237,7 +273,7 @@ void open_rooms_available_window(Session *session){
     room = newRoomAvailable(row);
     displayRoomEquipments(room->equipments, row[0]);
     displayTimeSlotComboBox(room, row[0], search);
-    displayTimeSlotLabel(room, row[0], search );
+    displayTimeSlotLabel(room->timeSlotLabel, row[0], search->date, search->time_slot );
 
     booking = prepareBooking(search, room, row[0]);
     booking->session = session;

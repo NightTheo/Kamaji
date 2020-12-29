@@ -631,17 +631,6 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkImage" id="img_equipment_projector">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="pixbuf">../img/icons/equipment/projector.png</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">0</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkLabel" id="lbl_equipment_projector">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -653,6 +642,17 @@
                   <packing>
                     <property name="left-attach">2</property>
                     <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkImage" id="img_equipment_projector">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="pixbuf">../img/icons/equipment/projector.png</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">2</property>
                   </packing>
                 </child>
                 <child>
@@ -1099,6 +1099,111 @@
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="pixbuf">../img/icons/back.png</property>
+  </object>
+  <object class="GtkWindow" id="window_reservations">
+    <property name="width-request">870</property>
+    <property name="height-request">580</property>
+    <property name="can-focus">False</property>
+    <property name="resizable">False</property>
+    <property name="window-position">center</property>
+    <child>
+      <object class="GtkBox" id="box_reservations_window">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">20</property>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton" id="button_back_from_reservations">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="halign">start</property>
+                <property name="valign">start</property>
+                <property name="margin-top">5</property>
+                <property name="image">img_back_from_reservations</property>
+                <property name="relief">none</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lbl_reservations_title">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-start">220</property>
+                <property name="margin-top">50</property>
+                <property name="label" translatable="yes">Révervations</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sawasdee Bold 40"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="scrolled_reservations">
+            <property name="width-request">790</property>
+            <property name="height-request">420</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="halign">center</property>
+            <property name="hscrollbar-policy">never</property>
+            <child>
+              <object class="GtkViewport" id="viewport_reservations">
+                <property name="height-request">-1</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="shadow-type">none</property>
+                <child>
+                  <!-- n-columns=2 n-rows=2 -->
+                  <object class="GtkGrid" id="grid_reservations">
+                    <property name="name">grid_reservations</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="row-spacing">15</property>
+                    <property name="column-spacing">20</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
   </object>
   <object class="GtkImage" id="img_back_planning">
     <property name="visible">True</property>
@@ -2242,32 +2347,37 @@
     <property name="can-focus">False</property>
     <property name="pixbuf">../img/icons/reservations/pen.png</property>
   </object>
-  <object class="GtkWindow" id="window_reservations">
-    <property name="width-request">870</property>
-    <property name="height-request">580</property>
+  <object class="GtkBox" id="box_reservation">
+    <property name="width-request">370</property>
+    <property name="height-request">210</property>
+    <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="resizable">False</property>
-    <property name="window-position">center</property>
+    <property name="halign">start</property>
+    <property name="orientation">vertical</property>
+    <property name="spacing">10</property>
+    <property name="baseline-position">top</property>
     <child>
-      <object class="GtkBox" id="box_reservations_window">
+      <object class="GtkBox" id="box_reservation_top">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">20</property>
+        <property name="homogeneous">True</property>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="box_reservation_where_when">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="orientation">vertical</property>
+            <property name="homogeneous">True</property>
             <child>
-              <object class="GtkButton" id="button_back_from_reservations">
+              <object class="GtkLabel" id="lbl_reservation_where">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
+                <property name="can-focus">False</property>
                 <property name="halign">start</property>
-                <property name="valign">start</property>
-                <property name="margin-top">5</property>
-                <property name="image">img_back_from_reservations</property>
-                <property name="relief">none</property>
+                <property name="label" translatable="yes">A22 - ESGI</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sawasdee Bold 15"/>
+                  <attribute name="foreground" value="#000000000000"/>
+                </attributes>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -2276,14 +2386,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="lbl_reservations_title">
+              <object class="GtkLabel" id="lbl_reservation_when">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-start">220</property>
-                <property name="margin-top">50</property>
-                <property name="label" translatable="yes">Révervations</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Mar 17 nov. 2020</property>
                 <attributes>
-                  <attribute name="font-desc" value="Sawasdee Bold 40"/>
+                  <attribute name="font-desc" value="Sawasdee 12"/>
+                  <attribute name="foreground" value="#000000000000"/>
                 </attributes>
               </object>
               <packing>
@@ -2300,338 +2410,15 @@
           </packing>
         </child>
         <child>
-          <object class="GtkScrolledWindow" id="scrolled_reservations">
-            <property name="width-request">790</property>
-            <property name="height-request">420</property>
+          <object class="GtkLabel" id="lbl_reservation_price">
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="halign">center</property>
-            <property name="hscrollbar-policy">never</property>
-            <child>
-              <object class="GtkViewport" id="viewport_reservations">
-                <property name="height-request">-1</property>
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="shadow-type">none</property>
-                <child>
-                  <!-- n-columns=2 n-rows=2 -->
-                  <object class="GtkGrid" id="grid_reservations">
-                    <property name="name">grid_reservations</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="row-spacing">15</property>
-                    <property name="column-spacing">20</property>
-                    <child>
-                      <object class="GtkBox" id="box_reservation">
-                        <property name="width-request">370</property>
-                        <property name="height-request">210</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="orientation">vertical</property>
-                        <property name="spacing">10</property>
-                        <property name="baseline-position">top</property>
-                        <child>
-                          <object class="GtkBox" id="box_reservation_top">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="homogeneous">True</property>
-                            <child>
-                              <object class="GtkBox" id="box_reservation_where_when">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="halign">start</property>
-                                <property name="orientation">vertical</property>
-                                <property name="homogeneous">True</property>
-                                <child>
-                                  <object class="GtkLabel" id="lbl_reservation_where">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">start</property>
-                                    <property name="label" translatable="yes">A22 - ESGI</property>
-                                    <attributes>
-                                      <attribute name="font-desc" value="Sawasdee Bold 15"/>
-                                      <attribute name="foreground" value="#000000000000"/>
-                                    </attributes>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="lbl_reservation_when">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Mar 17 nov. 2020</property>
-                                    <attributes>
-                                      <attribute name="font-desc" value="Sawasdee 12"/>
-                                      <attribute name="foreground" value="#000000000000"/>
-                                    </attributes>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="lbl_reservation_price">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="halign">end</property>
-                                <property name="label" translatable="yes">74,00€</property>
-                                <attributes>
-                                  <attribute name="font-desc" value="Sawasdee Bold 25"/>
-                                  <attribute name="foreground" value="#000000000000"/>
-                                </attributes>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="lbl_reservation_time_slot">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="label" translatable="yes">8h - 20h</property>
-                            <attributes>
-                              <attribute name="font-desc" value="Sawasdee 12"/>
-                              <attribute name="foreground" value="#000000000000"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkBox" id="box_reservation_equipment">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="spacing">5</property>
-                            <child>
-                              <object class="GtkImage" id="img_reservations_whiteboard">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="pixbuf">../img/icons/rooms_available/board_black.png</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkImage" id="img_reservations_monitor">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="pixbuf">../img/icons/rooms_available/monitor_black.png</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkImage" id="img_reservations_projector">
-                                <property name="can-focus">False</property>
-                                <property name="pixbuf">../img/icons/rooms_available/projector_black.png</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">2</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkImage" id="img_reservations_camera">
-                                <property name="can-focus">False</property>
-                                <property name="pixbuf">../img/icons/rooms_available/video-camera_black.png</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">3</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkBox" id="box_reservation_bottom">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="homogeneous">True</property>
-                            <child>
-                              <object class="GtkBox" id="box_reservation_drink">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="spacing">5</property>
-                                <child>
-                                  <object class="GtkImage" id="img_reservations_tea">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="pixbuf">../img/icons/reservations/tea-bag_black.png</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkImage" id="img_reservations_coffee">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="pixbuf">../img/icons/reservations/coffee-cup_black.png</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkBox" id="box_reservation_group">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="halign">center</property>
-                                <child>
-                                  <object class="GtkImage" id="img_rooms_available_capacity3">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="pixbuf">../img/icons/rooms_available/group_black.png</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="lbl_reservations_nb_persons">
-                                    <property name="width-request">40</property>
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes">7</property>
-                                    <attributes>
-                                      <attribute name="font-desc" value="Sawasdee Bold 15"/>
-                                      <attribute name="foreground" value="#000000000000"/>
-                                    </attributes>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkBox" id="box_reservation_action">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="halign">end</property>
-                                <property name="spacing">5</property>
-                                <child>
-                                  <object class="GtkButton" id="button_reservation_edit">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="receives-default">True</property>
-                                    <property name="image">img_reservations_pen</property>
-                                    <property name="relief">none</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="button_reservation_delete">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="receives-default">True</property>
-                                    <property name="image">img_reservations_bin</property>
-                                    <property name="relief">none</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">2</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">3</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">74,00€</property>
+            <attributes>
+              <attribute name="font-desc" value="Sawasdee Bold 25"/>
+              <attribute name="foreground" value="#000000000000"/>
+            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -2640,6 +2427,216 @@
           </packing>
         </child>
       </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="lbl_reservation_time_slot">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="halign">start</property>
+        <property name="label" translatable="yes">8h - 20h</property>
+        <attributes>
+          <attribute name="font-desc" value="Sawasdee 12"/>
+          <attribute name="foreground" value="#000000000000"/>
+        </attributes>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="box_reservation_equipment">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkImage" id="img_reservations_whiteboard">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="pixbuf">../img/icons/rooms_available/board_black.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="img_reservations_monitor">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="pixbuf">../img/icons/rooms_available/monitor_black.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="img_reservations_projector">
+            <property name="can-focus">False</property>
+            <property name="pixbuf">../img/icons/rooms_available/projector_black.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="img_reservations_camera">
+            <property name="can-focus">False</property>
+            <property name="pixbuf">../img/icons/rooms_available/video-camera_black.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="box_reservation_bottom">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="box_reservation_drink">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkImage" id="img_reservations_tea">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="pixbuf">../img/icons/reservations/tea-bag_black.png</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="img_reservations_coffee">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="pixbuf">../img/icons/reservations/coffee-cup_black.png</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="box_reservation_group">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <child>
+              <object class="GtkImage" id="img_rooms_available_capacity3">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="pixbuf">../img/icons/rooms_available/group_black.png</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lbl_reservations_nb_persons">
+                <property name="width-request">40</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">7</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sawasdee Bold 15"/>
+                  <attribute name="foreground" value="#000000000000"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="box_reservation_action">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkButton" id="button_reservation_edit">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="image">img_reservations_pen</property>
+                <property name="relief">none</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_reservation_delete">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="image">img_reservations_bin</property>
+                <property name="relief">none</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">3</property>
+      </packing>
     </child>
   </object>
   <object class="GtkImage" id="img_reservations_pen2">

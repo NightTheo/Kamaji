@@ -79,6 +79,19 @@ typedef struct RoomGtkBox{
   GtkButton *bookingButton;
 } RoomGtkBox;
 
+typedef struct ReservationBox{
+  GtkBuilder *builder;
+  GtkBox *box;
+  GtkLabel *locationLabel;
+  GtkLabel *dateLabel;
+  GtkLabel *timeSlotLabel;
+  GtkLabel *priceLabel;
+  GtkImage *equipments[4];
+  GtkImage *drinks[2];
+  GtkButton *edit;
+  GtkButton *delete;
+} ReservationBox;
+
 
 void open_home_window(char *idWindow);
 
@@ -97,6 +110,8 @@ void open_planning_window(Session *session);
 void open_rooms_available_window(Session *session);
 void open_drink_window_2(GtkWidget *Widget,gpointer data);
 void open_reservations_window2(GtkWidget *widget,gpointer data);
+void editReservation(GtkWidget *widget,gpointer data);
+void deleteReservation(GtkWidget *widget,gpointer data);
 
 // GET DATA
 void getSearchArguments(GtkWidget *widget,gpointer data);
@@ -114,13 +129,15 @@ void getCalendarWidgets(Calendar *c, GtkBuilder *builder);
 int *moveInCalendar(int year, int month, int day, int move);
 void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data);
 unsigned int getPriceRoom(int idRoom);
+MysqlSelect findReservationsInDB();
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
 RoomGtkBox *newRoomAvailable(MYSQL_ROW row);
+ReservationBox * newReservation(MYSQL_ROW row);
 void displayRoomEquipments(GtkImage *equipments[4], char *idRoom);
 void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search);
-void displayTimeSlotLabel(RoomGtkBox *room, char *idRoom, Search *search);
+void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slot);
 void reserveRoomBySearch(GtkWidget *widget, gpointer data);
 void planningNumbers(Calendar *calendar, struct tm *date);
 void click_button_planning(Session *session, char *idButton);
@@ -135,6 +152,7 @@ void updateTimeSlotLabels(Calendar *c);
 void reserveRoomByPlanning(Booking *b);
 void updateTimeSlotComboPlanning(Calendar *calendar);
 void onTimeSlotPlanningChanged(GtkWidget *widget, gpointer data);
+void setDateReservation(char *dateSQL, GtkLabel *label);
 
 // PRINT
 void printSearchParameter(Search *seach);
