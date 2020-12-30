@@ -17,11 +17,17 @@ gcc `pkg-config --cflags gtk+-3.0` -o exe/main src/main.c `pkg-config --libs gtk
 #include "navigation.c"
 #include "insertDataGtk.c"
 
+
 //################################################################
 int main(int argc, char **argv){
+  Session *session;
 
   gtk_init(&argc, &argv);
-  open_home_window("window_home");
+
+  session = malloc(sizeof(Session));
+  if( session == NULL ) exit(1);
+
+  open_home_window(NULL, session);
   gtk_main();
 }
 //################################################################

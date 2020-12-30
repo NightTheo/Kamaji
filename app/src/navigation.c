@@ -21,16 +21,15 @@ connet the signals for the navigation between the windows
 function: homekamaji
 Open Window_home
 */
-void open_home_window(char *idWindow){
+void open_home_window(GtkWidget *widget, gpointer data){
+  Session *session = data;
   time_t now;
-  Session *session;
 
-  session = malloc(sizeof(Session));
-  if( session == NULL ) exit(1);
-
-  newWindow(GLADE_FILE, idWindow, session);
+  newWindow(GLADE_FILE, "window_home", session);
   time( &now );
   session->today = localtime( &now ); // get the current date as tm struct
+
+  session->backFunction = open_home_window;
 
   click_button(session, "button_home_reservations", open_reservations_window);
   click_button(session, "button_home_search", open_new_res_window);
@@ -67,7 +66,6 @@ void newWindow(char* file, char* idWindow, Session *session){
 
   builder = gtk_builder_new_from_file(file);
   window = GTK_WIDGET(gtk_builder_get_object(builder, idWindow));
-  gtk_builder_connect_signals(builder, NULL);
   g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(gtk_main_quit), NULL);
 
   session->builder = builder;
@@ -98,6 +96,7 @@ void background_color( GtkWidget *widget, char *color ){
 void open_reservations_window(GtkWidget *widget,gpointer data){
   Session *session = data;
   GtkGrid *gridContainer;
+  GtkButton *backButton;
   ReservationBox *reservation;
   MYSQL_ROW row;
   MysqlSelect selectReservations;
@@ -105,6 +104,8 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
 
   close_and_open_window(session,"window_reservations");
   gridContainer = GTK_GRID( gtk_builder_get_object(session->builder, "grid_reservations") );
+  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_reservations") );
+  g_signal_connect(backButton, "clicked", G_CALLBACK(back),session);
   selectReservations = findReservationsInDB();
 
   while ((row = mysql_fetch_row(selectReservations.result)) != NULL){
@@ -112,7 +113,7 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
 
     //connecter les deux boutons
     g_signal_connect (reservation->edit,"clicked",G_CALLBACK(editReservation),session);
-    g_signal_connect (reservation->delete,"clicked",G_CALLBACK(deleteReservation),session);
+    g_signal_connect (reservation->delete,"clicked",G_CALLBACK(deleteReservation), row[0]);
 
     gtk_grid_attach (gridContainer, GTK_WIDGET(reservation->box),i%2, i/2, 1, 1);
     i++;
@@ -120,6 +121,8 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
 
   mysql_free_result(selectReservations.result);
   mysql_close(selectReservations.conn);
+
+
 }
 
 void editReservation(GtkWidget *widget,gpointer data){
@@ -127,8 +130,45 @@ void editReservation(GtkWidget *widget,gpointer data){
 }
 
 void deleteReservation(GtkWidget *widget,gpointer data){
-  printf("Coucou delete\n");
+  char *test = data;
+  char idBooking[8];
+  GtkWidget *window;
+  GtkBuilder *builder;
+  GtkButton *no;
+  GtkButton *yes;
+
+  strcpy(idBooking, test);
+
+  builder = gtk_builder_new_from_file(GLADE_FILE);
+  window = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_delete_reservation"));
+  gtk_builder_connect_signals(builder, NULL);
+
+  no = GTK_BUTTON(gtk_builder_get_object(builder, "button_delete_reservation_right"));
+  yes = GTK_BUTTON(gtk_builder_get_object(builder, "button_delete_reservation_left"));
+
+  //g_signal_connect(no, "clicked", G_CALLBACK(abordDeleteReservation), window);
+  //g_signal_connect(yes, "clicked", G_CALLBACK(confirmDeleteReservation), idBooking);
+
+  gtk_widget_show_all(window);
 }
+
+void abordDeleteReservation(GtkWidget *widget, gpointer data){
+  GtkWidget *window = data;
+  gtk_widget_destroy(window);
+}
+
+void confirmDeleteReservation(GtkWidget *widget, gpointer data){
+  char *test = data;
+  char idBooking[8];
+  char request[128];
+
+  strcpy(idBooking, test);
+  sprintf(request, "update BOOKING set state = 0 where id = %s;",idBooking);
+  printf("%s\n", request);
+
+}
+
+// ----------------------
 
 MysqlSelect findReservationsInDB(){
   MysqlSelect select;
@@ -153,8 +193,13 @@ Open window_new_reservation
 void open_new_res_window(GtkWidget *widget, gpointer data){
   Session *session = data;
   GtkComboBox *inputplace;
+  GtkButton *backButton;
 
   close_and_open_window(session, "window_new_reservation");
+
+  session->backFunction = open_home_window;
+  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_new_res") );
+  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
 
   //liste déroulante pour le lieu séléctionné de la réservation
   inputplace = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_where"));
@@ -187,18 +232,23 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
 
   session->search = search;
 
-  open_equipment_window(session);
+  open_equipment_window(NULL, session);
 }
 
 
 //##############################################################################
 // ----------------------
 // EQUIPMENTS
-void open_equipment_window(Session *session){
+void open_equipment_window(GtkWidget *widget,gpointer data){
+  Session* session = data;
+  GtkButton *backButton;
 
+  session->backFunction = open_new_res_window;
   close_and_open_window(session, "window_equipment");
-  click_button(session, "button_equipment_search", getEquipmentsCheckbox);
+  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_equiments") );
+  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
 
+  click_button(session, "button_equipment_search", getEquipmentsCheckbox);
 }
 
 // ----------------------
@@ -219,13 +269,20 @@ void getEquipmentsCheckbox(GtkWidget *widget,gpointer data){
   for(int i = 0; i < 4; i++)
     session->search->equipments[i] = equipments[i];
 
-  open_drink_window(session);
+  open_drink_window(NULL, session);
 }
 
 // ----------------------
 // DRINK
-void open_drink_window(Session *session){
+void open_drink_window(GtkWidget *widget,gpointer data){
+  Session *session = data;
+  GtkButton *backButton;
+
+  session->backFunction = open_equipment_window;
   close_and_open_window(session, "window_drink");
+  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_drink") );
+  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
+
   click_button(session, "button_drink_next", getSearchDrinksCheckbox);
 }
 // ----------------------
@@ -244,7 +301,7 @@ void getSearchDrinksCheckbox(GtkWidget *widget,gpointer data){
   for(int i = 0; i < 2; i++)
     session->search->drinks[i] = drinks[i];
 
-  open_rooms_available_window(session);
+  open_rooms_available_window(NULL ,session);
 }
 
 
@@ -252,19 +309,22 @@ void getSearchDrinksCheckbox(GtkWidget *widget,gpointer data){
 // ----------------------
 // ROOMS AVAILABLES
 
-void open_rooms_available_window(Session *session){
+void open_rooms_available_window(GtkWidget *widget,gpointer data){
+  Session *session = data;
   Search *search = session->search;
   RoomGtkBox *room;
   GtkContainer *listContainer;
   MYSQL_ROW row;
   MysqlSelect select;
   Booking *booking;
+  GtkButton *backButton;
 
+  session->backFunction = open_drink_window;
   close_and_open_window(session,"window_rooms_available");
-  //printSearchParameter(s);
+  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_rooms_available") );
+  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
   listContainer = GTK_CONTAINER( gtk_builder_get_object(session->builder, "box_available_list") );
 
-  //background_color of the map container
   GtkWidget *viewport_available_right = GTK_WIDGET(gtk_builder_get_object(session->builder,"viewport_available_right"));
   background_color(viewport_available_right , "#FFFFFF");
 
@@ -458,8 +518,14 @@ int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
 void open_place_room_window(GtkWidget *widget,gpointer data){
   Session *session = data;
   GtkComboBoxText *place, *room;
+  GtkButton *backButton;
 
   close_and_open_window(session,"window_place_room");
+
+  session->backFunction = open_home_window;
+  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_place_room") );
+  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
+
   place = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(session->builder, "combo_place_room_place"));
   room = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(session->builder, "combo_place_room_room"));
   gtk_builder_connect_signals(session->builder, NULL);
@@ -486,13 +552,20 @@ void getIdRoom(GtkWidget *widget, gpointer data){
   session->calendar = calendar;
 
 
-  open_planning_window(session);
+  open_planning_window(NULL, session);
 }
 
 // ----------------------
 
-void open_planning_window(Session *session){
+void open_planning_window(GtkWidget *widget,gpointer data){
+  Session *session = data;
+  GtkButton *backButton;
+
   close_and_open_window(session,"window_planning");
+
+  session->backFunction = open_place_room_window;
+  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_planning") );
+  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
 
   getCalendarWidgets(session->calendar, session->builder);
   planningNumbers(session->calendar, session->today);
@@ -637,11 +710,12 @@ void background_color_if_sensitive(GtkWidget *widget, char* color){
 void open_drink_window_2(GtkWidget *Widget,gpointer data){
   Session *session = data;
   Calendar *c = session->calendar;
+  GtkButton *backButton;
 
-
+  session->backFunction = open_planning_window;
   close_and_open_window(session, "window_drink");
-
-  printf("%d/%d/%d : %d\n", c->daySelected.year, c->daySelected.month, c->daySelected.day, c->timeSlotSelected );
+  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_drink") );
+  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
 
   click_button(session, "button_drink_next", getPlanningDrinksCheckbox);
 }

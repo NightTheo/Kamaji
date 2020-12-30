@@ -6,6 +6,18 @@ Call the data in the database and inject them in the windows.
 */
 
 
+
+// BACK
+
+void back(GtkWidget *widget, gpointer data){
+  Session *session = data;
+  gtk_widget_destroy( GTK_WIDGET( session->window ) );
+  (*session->backFunction)(NULL, session);
+}
+
+
+// ------------------------------------------------
+
 void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *firstRow, char *request ){
 
   MYSQL_ROW row;
@@ -120,17 +132,51 @@ ReservationBox * newReservation(MYSQL_ROW row){
   setDateReservation( row[6], reservation->dateLabel ); // date
   gtk_label_set_text( reservation->timeSlotLabel, row[7] ); // time slot
   displayRoomEquipments( reservation->equipments, row[1] );
-  //displayReservationDrinks( reservation->drinks, row[0] );
+  displayReservationDrinks( reservation->drinks, row[0] );
 
   //style
   background_color( GTK_WIDGET(reservation->box) , "#FFFFFF");
   return reservation;
 }
-/*
-void displayReservationDrinks(){
 
+void displayReservationDrinks(GtkImage *drinks[2], char *idBooking){
+
+  int *drinksArray = getRoomsEquipment(idBooking);
+  for(int i = 0; i < 2; i++){
+    if(drinksArray[i])
+      gtk_widget_show ( GTK_WIDGET( drinks[i] ) );
+    else
+      gtk_widget_hide ( GTK_WIDGET( drinks[i] ) );
+  }
+
+  free(drinksArray);
 }
-*/
+
+int *getReservationDrinks(char *idBooking){
+  MYSQL *conn = connect_db();
+  MYSQL_ROW row;
+  MYSQL_RES *result;
+  char request[128];
+  int *drinks;
+  uint8_t nbDrinks = 2;
+
+  drinks = malloc( sizeof(int) * nbDrinks);
+  if( drinks == NULL) exit(1);
+  for(int i = 0; i < 2; i++) drinks[i] = 0;
+
+  sprintf( request, "SELECT drink FROM _booking_include_drink \
+  INNER JOIN BOOKING as B WHERE B.id = %s ;", idBooking);
+
+  result = query(conn, request);
+  while ((row = mysql_fetch_row(result)) != NULL)
+    drinks[ atoi(*row)-1 ] = 1;
+
+  mysql_free_result(result);
+  mysql_close(conn);
+
+  return drinks;
+}
+
 // ------------------------
 
 void displayRoomEquipments(GtkImage *equipments[4], char *idRoom){
