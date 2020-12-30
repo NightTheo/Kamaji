@@ -110,10 +110,11 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
 
   while ((row = mysql_fetch_row(selectReservations.result)) != NULL){
     reservation = newReservation(row);
+    reservation->session = session;
 
     //connecter les deux boutons
     g_signal_connect (reservation->edit,"clicked",G_CALLBACK(editReservation),session);
-    g_signal_connect (reservation->delete,"clicked",G_CALLBACK(deleteReservation), row[0]);
+    g_signal_connect (reservation->delete,"clicked",G_CALLBACK(deleteReservation), reservation);
 
     gtk_grid_attach (gridContainer, GTK_WIDGET(reservation->box),i%2, i/2, 1, 1);
     i++;
@@ -121,8 +122,6 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
 
   mysql_free_result(selectReservations.result);
   mysql_close(selectReservations.conn);
-
-
 }
 
 void editReservation(GtkWidget *widget,gpointer data){
@@ -130,14 +129,12 @@ void editReservation(GtkWidget *widget,gpointer data){
 }
 
 void deleteReservation(GtkWidget *widget,gpointer data){
-  char *test = data;
+  ReservationBox *reservation = data;
   char idBooking[8];
   GtkWidget *window;
   GtkBuilder *builder;
   GtkButton *no;
   GtkButton *yes;
-
-  strcpy(idBooking, test);
 
   builder = gtk_builder_new_from_file(GLADE_FILE);
   window = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_delete_reservation"));
@@ -146,8 +143,9 @@ void deleteReservation(GtkWidget *widget,gpointer data){
   no = GTK_BUTTON(gtk_builder_get_object(builder, "button_delete_reservation_right"));
   yes = GTK_BUTTON(gtk_builder_get_object(builder, "button_delete_reservation_left"));
 
-  //g_signal_connect(no, "clicked", G_CALLBACK(abordDeleteReservation), window);
-  //g_signal_connect(yes, "clicked", G_CALLBACK(confirmDeleteReservation), idBooking);
+  reservation->dialogWindow = window;
+  g_signal_connect(no, "clicked", G_CALLBACK(abordDeleteReservation), window);
+  g_signal_connect(yes, "clicked", G_CALLBACK(confirmDeleteReservation), reservation);
 
   gtk_widget_show_all(window);
 }
@@ -155,17 +153,6 @@ void deleteReservation(GtkWidget *widget,gpointer data){
 void abordDeleteReservation(GtkWidget *widget, gpointer data){
   GtkWidget *window = data;
   gtk_widget_destroy(window);
-}
-
-void confirmDeleteReservation(GtkWidget *widget, gpointer data){
-  char *test = data;
-  char idBooking[8];
-  char request[128];
-
-  strcpy(idBooking, test);
-  sprintf(request, "update BOOKING set state = 0 where id = %s;",idBooking);
-  printf("%s\n", request);
-
 }
 
 // ----------------------

@@ -68,8 +68,8 @@ typedef struct MysqlSelect{
 } MysqlSelect;
 
 typedef struct RoomGtkBox{
-  GtkBuilder *builder;
   GtkBox *box;
+  GtkBuilder *builder;
   GtkLabel *locationLabel;
   GtkLabel *timeSlotLabel;
   GtkLabel *priceHalfDay;
@@ -80,7 +80,7 @@ typedef struct RoomGtkBox{
 } RoomGtkBox;
 
 typedef struct ReservationBox{
-  GtkBuilder *builder;
+  uint32_t idBooking;
   GtkBox *box;
   GtkLabel *locationLabel;
   GtkLabel *dateLabel;
@@ -90,6 +90,8 @@ typedef struct ReservationBox{
   GtkImage *drinks[2];
   GtkButton *edit;
   GtkButton *delete;
+  Session *session;
+  GtkWidget *dialogWindow;
 } ReservationBox;
 
 

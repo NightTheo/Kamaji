@@ -68,18 +68,19 @@ RoomGtkBox * newRoomAvailable(MYSQL_ROW row){
   RoomGtkBox *room = malloc( sizeof(RoomGtkBox) );
   if( room == NULL ) exit(1);
 
-  room->builder = gtk_builder_new_from_file(GLADE_FILE);
-  room->box = GTK_BOX(gtk_builder_get_object(room->builder, "box_available_list_element"));
-  room->locationLabel = GTK_LABEL(gtk_builder_get_object(room->builder, "lbl_available_list_element_where"));
-  room->timeSlotLabel = GTK_LABEL(gtk_builder_get_object(room->builder, "lbl_available_list_element_time_slot"));
-  room->priceHalfDay = GTK_LABEL(gtk_builder_get_object(room->builder, "lbl_available_list_element_price"));
-  room->nbPersons = GTK_LABEL(gtk_builder_get_object(room->builder, "lbl_available_list_element_left_nb"));
-  room->bookingTimeSlotComboBox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(room->builder, "combo_available_list_element_when"));
-  room->bookingButton = GTK_BUTTON(gtk_builder_get_object(room->builder, "button_available_list_element_booking"));
-  room->equipments[0] = GTK_IMAGE(gtk_builder_get_object(room->builder, "img_rooms_available_whiteboard"));
-  room->equipments[1] = GTK_IMAGE(gtk_builder_get_object(room->builder, "img_rooms_available_monitor"));
-  room->equipments[2] = GTK_IMAGE(gtk_builder_get_object(room->builder, "img_rooms_available_projector"));
-  room->equipments[3] = GTK_IMAGE(gtk_builder_get_object(room->builder, "img_rooms_available_camera"));
+  GtkBuilder *b = gtk_builder_new_from_file(GLADE_FILE);
+  room->builder = b;
+  room->box = GTK_BOX(gtk_builder_get_object(b, "box_available_list_element"));
+  room->locationLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_where"));
+  room->timeSlotLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_time_slot"));
+  room->priceHalfDay = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_price"));
+  room->nbPersons = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_left_nb"));
+  room->bookingTimeSlotComboBox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(b, "combo_available_list_element_when"));
+  room->bookingButton = GTK_BUTTON(gtk_builder_get_object(b, "button_available_list_element_booking"));
+  room->equipments[0] = GTK_IMAGE(gtk_builder_get_object(b, "img_rooms_available_whiteboard"));
+  room->equipments[1] = GTK_IMAGE(gtk_builder_get_object(b, "img_rooms_available_monitor"));
+  room->equipments[2] = GTK_IMAGE(gtk_builder_get_object(b, "img_rooms_available_projector"));
+  room->equipments[3] = GTK_IMAGE(gtk_builder_get_object(b, "img_rooms_available_camera"));
 
   char location[64];
   char price[8];
@@ -110,6 +111,7 @@ ReservationBox * newReservation(MYSQL_ROW row){
   if( reservation == NULL ) exit(1);
 
   GtkBuilder *b = gtk_builder_new_from_file(GLADE_FILE);
+  reservation->idBooking = (uint32_t)atoi(row[0]);
   reservation->box = GTK_BOX(gtk_builder_get_object(b, "box_reservation"));
   reservation->locationLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_where"));
   reservation->dateLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_when"));
@@ -495,7 +497,24 @@ void setDateReservation(char *dateSQL, GtkLabel *label){
 
 // ------------------------
 
+void confirmDeleteReservation(GtkWidget *widget, gpointer data){
+  ReservationBox *reservation = data;
+  MYSQL *conn = connect_db();
+  MYSQL_ROW row;
+  MYSQL_RES *result;
+  char request[128];
 
+  sprintf(request, "update BOOKING set state = 0 where id = %u;",reservation->idBooking);
+  result = query(conn, request);
+
+  gtk_widget_destroy(GTK_WIDGET(reservation->dialogWindow));
+  gtk_widget_destroy(GTK_WIDGET(reservation->session->window));
+  open_reservations_window(NULL,reservation->session);
+  mysql_free_result(result);
+
+  free(result);
+  mysql_close(conn);
+}
 
 // ------------------------
 
