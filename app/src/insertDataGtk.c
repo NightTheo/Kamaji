@@ -574,6 +574,23 @@ void checkDataNewRes(GtkWidget *widget, gpointer data){
 
 // ------------------------
 
+void checkDataPlaceRoom(GtkWidget *widget, gpointer data){
+  GtkWidget *button = data;
+  GtkComboBox *room = GTK_COMBO_BOX( widget );
+  uint8_t id;
+
+  if( gtk_combo_box_get_active_id(room) != NULL){
+    id = (uint8_t)atoi(gtk_combo_box_get_active_id(room));
+    if( id > 0 )
+      gtk_widget_set_sensitive(button, TRUE);
+    else
+      gtk_widget_set_sensitive(button, FALSE);
+  }
+}
+
+
+
+
 
 
 //

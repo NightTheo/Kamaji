@@ -515,11 +515,12 @@ int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
 
 //##############################################################################
 // ----------------------
-//PLANNING
+//PLACE ROOM
+
 void open_place_room_window(GtkWidget *widget,gpointer data){
   Session *session = data;
   GtkComboBoxText *place, *room;
-  GtkButton *backButton;
+  GtkButton *nextButton, *backButton;
 
   close_and_open_window(session,"window_place_room");
 
@@ -529,12 +530,15 @@ void open_place_room_window(GtkWidget *widget,gpointer data){
 
   place = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(session->builder, "combo_place_room_place"));
   room = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(session->builder, "combo_place_room_room"));
-  gtk_builder_connect_signals(session->builder, NULL);
 
   // fill the comboBoxText with places from db
   comboBoxTextFill( place,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
   g_signal_connect( place,"changed",G_CALLBACK(fillComboBoxRooms),room);
 
+  //check data
+  nextButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_place_room") );
+  gtk_widget_set_sensitive(GTK_WIDGET(nextButton), FALSE);
+  g_signal_connect(room, "changed", G_CALLBACK(checkDataPlaceRoom),nextButton);
 
   click_button(session, "button_place_room", getIdRoom);
 }
@@ -557,6 +561,7 @@ void getIdRoom(GtkWidget *widget, gpointer data){
 }
 
 // ----------------------
+//PLANNING
 
 void open_planning_window(GtkWidget *widget,gpointer data){
   Session *session = data;
@@ -707,6 +712,7 @@ void background_color_if_sensitive(GtkWidget *widget, char* color){
 }
 
 // ----------------------
+// DRINKS 2
 
 void open_drink_window_2(GtkWidget *Widget,gpointer data){
   Session *session = data;

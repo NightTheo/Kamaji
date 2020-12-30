@@ -165,6 +165,7 @@ uint8_t checkDataInputPlace(GtkComboBox *place);
 void focusDateCalendar(GtkCalendar *calendar);
 uint8_t checkDataCalendar(GtkCalendar *calendar);
 void checkDataNewRes(GtkWidget *widget, gpointer data);
+void checkDataPlaceRoom(GtkWidget *widget, gpointer data);
 
 // PRINT
 void printSearchParameter(Search *seach);
