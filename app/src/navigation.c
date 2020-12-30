@@ -23,11 +23,8 @@ Open Window_home
 */
 void open_home_window(GtkWidget *widget, gpointer data){
   Session *session = data;
-  time_t now;
 
   newWindow(GLADE_FILE, "window_home", session);
-  time( &now );
-  session->today = localtime( &now ); // get the current date as tm struct
 
   session->backFunction = open_home_window;
 
@@ -173,6 +170,7 @@ MysqlSelect findReservationsInDB(){
 }
 
 // ----------------------
+// NEW RESERVATIONS
 /*
 function: open_new_res_window
 Open window_new_reservation
@@ -180,7 +178,9 @@ Open window_new_reservation
 void open_new_res_window(GtkWidget *widget, gpointer data){
   Session *session = data;
   GtkComboBox *inputplace;
-  GtkButton *backButton;
+  GtkButton *backButton, *nextButton;
+  GtkCalendar *calendar;
+  GtkWidget **check;
 
   close_and_open_window(session, "window_new_reservation");
 
@@ -188,14 +188,28 @@ void open_new_res_window(GtkWidget *widget, gpointer data){
   backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_new_res") );
   g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
 
-  //liste déroulante pour le lieu séléctionné de la réservation
+  nextButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_new_res") );
+  gtk_widget_set_sensitive(GTK_WIDGET(nextButton), FALSE);
+
   inputplace = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_where"));
   comboBoxTextFill( GTK_COMBO_BOX_TEXT(inputplace) ,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
+
+  calendar = GTK_CALENDAR(gtk_builder_get_object(session->builder, "calendar_new_res") );
+  focusDateCalendar(calendar);
+
+  //check data
+  if( (check = malloc( sizeof(GtkWidget*) * 3 )) == NULL) exit(1);
+  check[0] = GTK_WIDGET(nextButton);
+  check[1] = GTK_WIDGET(inputplace);
+  check[2] = GTK_WIDGET(calendar);
+  g_signal_connect(inputplace, "changed", G_CALLBACK(checkDataNewRes), check);
+  g_signal_connect(calendar, "day-selected", G_CALLBACK(checkDataNewRes), check);
 
   click_button(session, "button_new_res", getSearchArguments);
 }
 
 // ----------------------
+
 void getSearchArguments(GtkWidget *widget,gpointer data){
   Session *session = data;
   Search *search = malloc(sizeof(Search));

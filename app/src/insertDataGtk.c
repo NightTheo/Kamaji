@@ -519,13 +519,60 @@ void confirmDeleteReservation(GtkWidget *widget, gpointer data){
 // ------------------------
 
 
+void focusDateCalendar(GtkCalendar *calendar){
+  time_t now;
+  struct tm *td;
+  int *tomorrow;
+
+  time( &now );
+  td = localtime( &now );
+  tomorrow = moveInCalendar(td->tm_year+1900, td->tm_mon, td->tm_mday,1);
+  gtk_calendar_select_month (calendar, tomorrow[1], tomorrow[0] );
+  gtk_calendar_select_day ( calendar, tomorrow[2] );
+
+  free(tomorrow);
+}
+
+// ------------------------
+
+uint8_t checkDataInputPlace(GtkComboBox *place){
+    uint32_t id;
+
+    if( gtk_combo_box_get_active_id(place) != NULL ){
+      id = (uint32_t)atoi( gtk_combo_box_get_active_id(place) );
+      return  id > 0;
+    }
+  return 0;
+}
+
+// ------------------------
+
+uint8_t checkDataCalendar(GtkCalendar *calendar){
+  Date d;
+  time_t now;
+  struct tm *td;
+
+  gtk_calendar_get_date ( calendar, (guint *)&d.year, (guint *)&d.month, (guint *)&d.day);
+  time( &now );
+  td = localtime( &now );
+  return !(d.year <= td->tm_year+1900 && d.month <= td->tm_mon && d.day <= td->tm_mday);
+}
 
 
+// ------------------------
 
+void checkDataNewRes(GtkWidget *widget, gpointer data){
+  GtkWidget **check = data;
+  /*printf("place: %u\n",checkDataInputPlace( GTK_COMBO_BOX(check[1]) ) );
+  printf("calendar: %u\n",checkDataCalendar( GTK_CALENDAR(check[2] )));*/
 
+  if( checkDataInputPlace( GTK_COMBO_BOX(check[1]) ) && checkDataCalendar( GTK_CALENDAR(check[2] )) )
+    gtk_widget_set_sensitive( GTK_WIDGET(check[0]), TRUE );
+  else
+    gtk_widget_set_sensitive( GTK_WIDGET(check[0]), FALSE );
+}
 
-
-
+// ------------------------
 
 
 

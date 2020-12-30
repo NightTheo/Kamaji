@@ -21,11 +21,14 @@ gcc `pkg-config --cflags gtk+-3.0` -o exe/main src/main.c `pkg-config --libs gtk
 //################################################################
 int main(int argc, char **argv){
   Session *session;
+  time_t now;
 
   gtk_init(&argc, &argv);
 
   session = malloc(sizeof(Session));
   if( session == NULL ) exit(1);
+  time( &now );
+  session->today = localtime( &now ); // get the current date as tm struct
 
   open_home_window(NULL, session);
   gtk_main();

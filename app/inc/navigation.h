@@ -161,6 +161,10 @@ void onTimeSlotPlanningChanged(GtkWidget *widget, gpointer data);
 void setDateReservation(char *dateSQL, GtkLabel *label);
 void abordDeleteReservation(GtkWidget *widget, gpointer data);
 void confirmDeleteReservation(GtkWidget *widget, gpointer data);
+uint8_t checkDataInputPlace(GtkComboBox *place);
+void focusDateCalendar(GtkCalendar *calendar);
+uint8_t checkDataCalendar(GtkCalendar *calendar);
+void checkDataNewRes(GtkWidget *widget, gpointer data);
 
 // PRINT
 void printSearchParameter(Search *seach);
