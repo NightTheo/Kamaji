@@ -317,7 +317,6 @@ void open_rooms_available_window(GtkWidget *widget,gpointer data){
   GtkContainer *listContainer;
   MYSQL_ROW row;
   MysqlSelect select;
-  Booking *booking;
   GtkButton *backButton;
 
   session->backFunction = open_drink_window;
@@ -331,20 +330,39 @@ void open_rooms_available_window(GtkWidget *widget,gpointer data){
 
   select = findAvailableRooms(search);
   while ((row = mysql_fetch_row(select.result)) != NULL){
-    room = newRoomAvailable(row);
-    displayRoomEquipments(room->equipments, row[0]);
-    displayTimeSlotComboBox(room, row[0], search);
-    displayTimeSlotLabel(room->timeSlotLabel, row[0], search->date, search->time_slot );
+    if( !hasRequiredEquipments(search->equipments, row[0]) ) continue;
 
-    booking = prepareBooking(search, room, row[0]);
-    booking->session = session;
-    g_signal_connect (room->bookingButton,"clicked",G_CALLBACK(reserveRoomBySearch),booking);
+    room = newRoomAvailable(row);
+    displayDataRoom(room, row, session);
     gtk_container_add ( listContainer, GTK_WIDGET(room->box) );
   }
+
   mysql_free_result(select.result);
   mysql_close(select.conn);
 }
 
+void displayDataRoom(RoomGtkBox *room, MYSQL_ROW row, Session *session){
+  Search *search = session->search;
+  Booking *booking;
+
+  displayRoomEquipments(room->equipments, row[0]);
+  displayTimeSlotComboBox(room, row[0], search);
+  displayTimeSlotLabel(room->timeSlotLabel, row[0], search->date, search->time_slot );
+  booking = prepareBooking(search, room, row[0]);
+  booking->session = session;
+  g_signal_connect (room->bookingButton,"clicked",G_CALLBACK(reserveRoomBySearch),booking);
+}
+
+uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom){
+  int *roomEquipments = getRoomsEquipment(idRoom);
+
+  for(int i = 0; i < 4; i++)
+    if( requiredEquipments[i] == 1 && roomEquipments[i] == 0)
+      return 0;
+
+  free(roomEquipments);
+  return 1;
+}
 // ----------------------
 
 Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){

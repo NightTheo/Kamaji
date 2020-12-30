@@ -64,7 +64,10 @@ void fillComboBoxRooms(GtkComboBoxText *place,gpointer room){
 
 
 RoomGtkBox * newRoomAvailable(MYSQL_ROW row){
-  //char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char equipments[4][16] = {"monitor", "camera", "whiteboard", "projector"};
+  char id[32];
+  char location[64];
+  char price[8];
   RoomGtkBox *room = malloc( sizeof(RoomGtkBox) );
   if( room == NULL ) exit(1);
 
@@ -77,13 +80,10 @@ RoomGtkBox * newRoomAvailable(MYSQL_ROW row){
   room->nbPersons = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_left_nb"));
   room->bookingTimeSlotComboBox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(b, "combo_available_list_element_when"));
   room->bookingButton = GTK_BUTTON(gtk_builder_get_object(b, "button_available_list_element_booking"));
-  room->equipments[0] = GTK_IMAGE(gtk_builder_get_object(b, "img_rooms_available_whiteboard"));
-  room->equipments[1] = GTK_IMAGE(gtk_builder_get_object(b, "img_rooms_available_monitor"));
-  room->equipments[2] = GTK_IMAGE(gtk_builder_get_object(b, "img_rooms_available_projector"));
-  room->equipments[3] = GTK_IMAGE(gtk_builder_get_object(b, "img_rooms_available_camera"));
-
-  char location[64];
-  char price[8];
+  for(int i = 0; i < 4; i++){
+    sprintf(id, "img_rooms_available_%s", equipments[i]);
+    room->equipments[i] = GTK_IMAGE(gtk_builder_get_object(b,id));
+  }
 
   sprintf(location, "%s - %s", row[1], row[2]);
   sprintf(price, "%s€", row[4]);

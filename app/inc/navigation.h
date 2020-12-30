@@ -135,11 +135,13 @@ int *moveInCalendar(int year, int month, int day, int move);
 void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data);
 unsigned int getPriceRoom(int idRoom);
 MysqlSelect findReservationsInDB();
+uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom);
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
 RoomGtkBox *newRoomAvailable(MYSQL_ROW row);
-ReservationBox * newReservation(MYSQL_ROW row);
+void displayDataRoom(RoomGtkBox *room, MYSQL_ROW row, Session *session);
+ReservationBox *newReservation(MYSQL_ROW row);
 void displayRoomEquipments(GtkImage *equipments[4], char *idRoom);
 void displayReservationDrinks(GtkImage *drinks[2], char *idBooking);
 void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search);
