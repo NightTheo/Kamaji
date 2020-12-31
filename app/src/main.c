@@ -25,12 +25,12 @@ int main(int argc, char **argv){
 
   gtk_init(&argc, &argv);
 
-  session = malloc(sizeof(Session));
-  if( session == NULL ) exit(1);
+  session = initSession();
   time( &now );
   session->today = localtime( &now ); // get the current date as tm struct
 
   open_home_window(NULL, session);
+  
   gtk_main();
 }
 //################################################################

@@ -7,8 +7,33 @@ Call the data in the database and inject them in the windows.
 
 
 
-// BACK
 
+// INIT SESSION
+Session *initSession(){
+  Session *session;
+  Search *search;
+  Calendar *calendar;
+
+  session = malloc(sizeof(Session));
+  search = malloc(sizeof(Search));
+  calendar = malloc(sizeof(Calendar));
+  if( session == NULL || search == NULL || calendar == NULL)
+    exit(1);
+
+  session->search = search;
+  session->calendar = calendar;
+
+  return session;
+}
+
+void kamajiQuit(GtkWidget *w, gpointer data){
+  Session *session = data;
+  if( session->search != NULL ) free(session->search);
+  if( session->calendar != NULL ) free(session->calendar);
+  gtk_main_quit();
+}
+
+// BACK
 void back(GtkWidget *widget, gpointer data){
   Session *session = data;
   gtk_widget_destroy( GTK_WIDGET( session->window ) );
@@ -276,6 +301,7 @@ void planningNumbers(Calendar *calendar, struct tm *date){
   updateWeekLabel(startDate, calendar->week);
 
   free(startDate);
+  startDate = NULL;
 }
 
 // ------------------------
@@ -290,6 +316,7 @@ void updatePlanningNumbers(int *startDate, GtkLabel *days[5]){
     sprintf(charNumber, "%d", intNumber[2] );
     gtk_label_set_text( days[i], charNumber );
     free(intNumber);
+    intNumber = NULL;
   }
 }
 
@@ -378,6 +405,7 @@ void planningChangeWeek(GtkWidget *widget, gpointer data){
   updateButtonsPlanning(session->calendar, session->today);
 
   free(startDate);
+  startDate = NULL;
 }
 
 // ------------------------
@@ -392,6 +420,7 @@ void updateWeekLabel( int *startDate, GtkLabel *week){
   gtk_label_set_text(week, weekLabel);
 
   free(endDate);
+  endDate = NULL;
 }
 
 // ------------------------
@@ -448,6 +477,7 @@ void updateButtonsPlanning( Calendar *calendar, struct tm *td){
 
       showOrHidePlanningButton(isAvailable, button);
       free(startDate);
+      startDate = NULL;
     }
   }
 }
@@ -510,9 +540,8 @@ void confirmDeleteReservation(GtkWidget *widget, gpointer data){
   gtk_widget_destroy(GTK_WIDGET(reservation->dialogWindow));
   gtk_widget_destroy(GTK_WIDGET(reservation->session->window));
   open_reservations_window(NULL,reservation->session);
-  mysql_free_result(result);
 
-  free(result);
+  mysql_free_result(result);
   mysql_close(conn);
 }
 
@@ -531,6 +560,7 @@ void focusDateCalendar(GtkCalendar *calendar){
   gtk_calendar_select_day ( calendar, tomorrow[2] );
 
   free(tomorrow);
+  tomorrow = NULL;
 }
 
 // ------------------------

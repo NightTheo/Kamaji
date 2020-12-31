@@ -63,7 +63,7 @@ void newWindow(char* file, char* idWindow, Session *session){
 
   builder = gtk_builder_new_from_file(file);
   window = GTK_WIDGET(gtk_builder_get_object(builder, idWindow));
-  g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(kamajiQuit), session);
 
   session->builder = builder;
   session->window = GTK_WINDOW(window);
@@ -98,6 +98,7 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
   MYSQL_ROW row;
   MysqlSelect selectReservations;
   int i = 0;
+
 
   close_and_open_window(session,"window_reservations");
   gridContainer = GTK_GRID( gtk_builder_get_object(session->builder, "grid_reservations") );
@@ -212,8 +213,7 @@ void open_new_res_window(GtkWidget *widget, gpointer data){
 
 void getSearchArguments(GtkWidget *widget,gpointer data){
   Session *session = data;
-  Search *search = malloc(sizeof(Search));
-  if( search == NULL ) exit(1);
+  Search *search = session->search;
 
   GtkComboBox *inputplace;
   GtkComboBox *inputTime;
@@ -230,8 +230,6 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
   search->time_slot = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputTime) ) );
   gtk_calendar_get_date(inputDate, (guint*)&search->date.year, (guint*)&search->date.month, (guint*)&search->date.day);
   search->date.month++;
-
-  session->search = search;
 
   open_equipment_window(NULL, session);
 }
@@ -361,6 +359,7 @@ uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom){
       return 0;
 
   free(roomEquipments);
+  roomEquipments = NULL;
   return 1;
 }
 // ----------------------
@@ -441,6 +440,7 @@ void reserveRoomBySearch(GtkWidget *widget, gpointer data){
   query(conn, request);
   mysql_close(conn);
   free(b);
+  b = NULL;
 
   open_reservations_window(NULL, session);
 }
@@ -567,13 +567,10 @@ void getIdRoom(GtkWidget *widget, gpointer data){
   Session *session = data;
   GtkComboBox *place = GTK_COMBO_BOX( gtk_builder_get_object( session->builder, "combo_place_room_place" ) );
   GtkComboBox *room = GTK_COMBO_BOX( gtk_builder_get_object( session->builder, "combo_place_room_room" ) );
-  Calendar *calendar = malloc( sizeof(Calendar) );
-  if( calendar == NULL ) exit(1);
+  Calendar *calendar = session->calendar;
 
   calendar->id_room = atoi( gtk_combo_box_get_active_id(room) );
   calendar->id_place = atoi( gtk_combo_box_get_active_id(place) );
-  session->calendar = calendar;
-
 
   open_planning_window(NULL, session);
 }
@@ -672,6 +669,7 @@ void chooseTimeSlot(GtkWidget *widget, gpointer data){
   updateTimeSlotLabels(calendar);
 
   free(selected);
+  selected = NULL;
 }
 
 // ----------------------
@@ -829,6 +827,7 @@ void reserveRoomByPlanning(Booking *b){
   query(conn, request);
   mysql_close(conn);
   free(b);
+  b = NULL;
 }
 
 
