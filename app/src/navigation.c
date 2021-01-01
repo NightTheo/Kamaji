@@ -656,7 +656,6 @@ void open_planning_window(GtkWidget *widget,gpointer data){
 
   updateButtonsPlanning(session->calendar, session->today);
 
-
   click_button_planning(session, "button_planning_weeks_next");  // NEXT
   click_button_planning(session, "button_planning_weeks_back"); // PREV
 

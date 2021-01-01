@@ -489,7 +489,7 @@ void updateButtonsPlanning( Calendar *calendar, struct tm *td){
   char date[16];
   char idRoom[4];
   int i, j;
-  int isAvailable;
+  int isAvailable, isFuture = 1;
   Date planning = calendar->planning;
   GtkWidget *button;
 
@@ -499,16 +499,22 @@ void updateButtonsPlanning( Calendar *calendar, struct tm *td){
       button = GTK_WIDGET(calendar->buttonsBooking[i][j]);
       background_color(button, "#ffffff");
 
-      int *startDate = moveInCalendar(planning.year, planning.month, planning.day, j);
-      sprintf(date, "%d-%d-%d", startDate[0], startDate[1]+1, startDate[2]);
+      int *curDate = moveInCalendar(planning.year, planning.month, planning.day, j);
+      sprintf(date, "%d-%d-%d", curDate[0], curDate[1]+1, curDate[2]);
       isAvailable = isTimeSlotAvailable(timeSlots[i], date, idRoom);
 
-      if(startDate[0] <= td->tm_year + 1900 && startDate[1]  <= td->tm_mon && startDate[2]  <= td->tm_mday)
-        isAvailable = -1;
+      if( curDate[0] >= td->tm_year + 1900 )
+        if( curDate[1] >= td->tm_mon )
+          if( curDate[2] > td->tm_mday ) isFuture = 1;
+          else isFuture = 0;
+        else isFuture = 0;
+      else isFuture = 0;
+
+      isAvailable = isAvailable == 1 && isFuture == 1 ? 1 : -1;
 
       showOrHidePlanningButton(isAvailable, button);
-      free(startDate);
-      startDate = NULL;
+      free(curDate);
+      curDate = NULL;
     }
   }
 }
@@ -597,7 +603,13 @@ uint8_t checkDataCalendar(GtkCalendar *calendar){
   gtk_calendar_get_date ( calendar, (guint *)&d.year, (guint *)&d.month, (guint *)&d.day);
   time( &now );
   td = localtime( &now );
-  return !(d.year <= td->tm_year+1900 && d.month <= td->tm_mon && d.day <= td->tm_mday);
+
+  if( d.year >= td->tm_year + 1900 )
+    if( d.month >= td->tm_mon )
+      if( d.day > td->tm_mday ) return 1;
+      else return 0;
+    else return 0;
+  else return 0;
 }
 
 
