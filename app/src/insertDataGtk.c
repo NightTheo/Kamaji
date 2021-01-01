@@ -181,7 +181,7 @@ void displayReservationData(ReservationBox reservation, MYSQL_ROW row){
 
 void displayReservationDrinks(GtkImage *drinks[2], char *idBooking){
 
-  int *drinksArray = getRoomsEquipment(idBooking);
+  int *drinksArray = getReservationDrinks(idBooking);
   for(int i = 0; i < 2; i++){
     if(drinksArray[i])
       gtk_widget_show ( GTK_WIDGET( drinks[i] ) );
@@ -204,8 +204,7 @@ int *getReservationDrinks(char *idBooking){
   if( drinks == NULL) exit(1);
   for(int i = 0; i < 2; i++) drinks[i] = 0;
 
-  sprintf( request, "SELECT drink FROM _booking_include_drink \
-  INNER JOIN BOOKING as B WHERE B.id = %s ;", idBooking);
+  sprintf( request, "SELECT drink FROM _booking_include_drink WHERE booking = %s ;", idBooking);
 
   result = query(conn, request);
   while ((row = mysql_fetch_row(result)) != NULL)

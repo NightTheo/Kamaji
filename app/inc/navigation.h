@@ -106,9 +106,10 @@ typedef struct Session{
 Session *initSession();
 void kamajiQuit(GtkWidget *w, gpointer data);
 
-// liste chainée
+// free
 void freeBookings(Booking **start);
 void freeDelReservations(delReservation **start);
+void freeCheckDataSearch(GtkWidget *widget,gpointer data);
 
 void click_button(Session *session, char *idButton,void (*function));
 void close_and_open_window(Session *session, char *idNewWindow);
@@ -151,6 +152,7 @@ void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data);
 unsigned int getPriceRoom(int idRoom);
 MysqlSelect findReservationsInDB();
 uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom);
+int *getReservationDrinks(char *idBooking);
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);

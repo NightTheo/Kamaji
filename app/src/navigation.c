@@ -211,8 +211,14 @@ void open_new_res_window(GtkWidget *widget, gpointer data){
   check[2] = GTK_WIDGET(calendar);
   g_signal_connect(inputplace, "changed", G_CALLBACK(checkDataNewRes), check);
   g_signal_connect(calendar, "day-selected", G_CALLBACK(checkDataNewRes), check);
+  g_signal_connect( nextButton, "clicked", G_CALLBACK(freeCheckDataSearch), check );
 
   click_button(session, "button_new_res", getSearchArguments);
+}
+
+void freeCheckDataSearch(GtkWidget *widget,gpointer data){
+  GtkWidget **check = data;
+  free(check);
 }
 
 // ----------------------
