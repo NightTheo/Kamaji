@@ -10,6 +10,31 @@ typedef struct Date{
   int day;
 } Date;
 
+typedef struct RoomGtkBox{
+  GtkBox *box;
+  GtkBuilder *builder;
+  GtkLabel *locationLabel;
+  GtkLabel *timeSlotLabel;
+  GtkLabel *priceHalfDay;
+  GtkLabel *nbPersons;
+  GtkImage *equipments[4];
+  GtkComboBoxText *bookingTimeSlotComboBox;
+  GtkButton *bookingButton;
+} RoomGtkBox;
+
+typedef struct Booking{
+  char test[8];
+  int idRoom;
+  int nb_persons;
+  double price;
+  Date date;
+  int drinks[2];
+  int time_slot;
+  void *session;
+  struct Booking *next;
+} Booking;
+
+
 typedef struct Search{
   int id_place;
   int nb_persons;
@@ -17,6 +42,7 @@ typedef struct Search{
   Date date;
   int equipments[4];
   int drinks[2];
+  Booking *startBooking;
 } Search;
 
 typedef struct Calendar{
@@ -41,46 +67,13 @@ typedef struct Calendar{
   GtkButton *next;
 } Calendar;
 
-typedef struct Session{
-  GtkBuilder *builder;
-  GtkWindow *window;
-  Search *search;
-  Calendar *calendar;
-  struct tm *today;
-  void (*backFunction)(GtkWidget *, gpointer);
-
-} Session;
-
-typedef struct Booking{
-  int idRoom;
-  int nb_persons;
-  double price;
-  Date date;
-  int drinks[2];
-  int time_slot;
-  Session *session;
-} Booking;
-
 typedef struct MysqlSelect{
   MYSQL *conn;
   char request[1024];
   MYSQL_RES *result;
 } MysqlSelect;
 
-typedef struct RoomGtkBox{
-  GtkBox *box;
-  GtkBuilder *builder;
-  GtkLabel *locationLabel;
-  GtkLabel *timeSlotLabel;
-  GtkLabel *priceHalfDay;
-  GtkLabel *nbPersons;
-  GtkImage *equipments[4];
-  GtkComboBoxText *bookingTimeSlotComboBox;
-  GtkButton *bookingButton;
-} RoomGtkBox;
-
 typedef struct ReservationBox{
-  uint32_t idBooking;
   GtkBox *box;
   GtkLabel *locationLabel;
   GtkLabel *dateLabel;
@@ -88,15 +81,34 @@ typedef struct ReservationBox{
   GtkLabel *priceLabel;
   GtkImage *equipments[4];
   GtkImage *drinks[2];
-  GtkButton *edit;
   GtkButton *delete;
-  Session *session;
-  GtkWidget *dialogWindow;
 } ReservationBox;
+
+typedef struct delReservation{
+  uint32_t idBooking;
+  GtkWidget *dialogWindow;
+  void *session;
+  struct delReservation *next;
+}delReservation;
+
+typedef struct Session{
+  GtkBuilder *builder;
+  GtkWindow *window;
+  Search *search;
+  Calendar *calendar;
+  struct tm *today;
+  struct delReservation *nextReservation;
+  void (*backFunction)(GtkWidget *, gpointer);
+} Session;
+
 
 
 Session *initSession();
 void kamajiQuit(GtkWidget *w, gpointer data);
+
+// liste chainée
+void freeBookings(Booking **start);
+void freeDelReservations(delReservation **start);
 
 void click_button(Session *session, char *idButton,void (*function));
 void close_and_open_window(Session *session, char *idNewWindow);
@@ -129,7 +141,7 @@ MysqlSelect findAvailableRooms(Search *search);
 int *getRoomsEquipment(char *idRoom);
 int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom);
 int isRestDayAvailable( Date date, int time_slot_int, char *idRoom );
-Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom );
+Booking *prepareBooking( Search *search, RoomGtkBox room, char *idRoom );
 Booking *prepareBookingPlanning(Calendar c);
 int getPriceDrinks(int drinks[2], int idPlace);
 void getIdRoom(GtkWidget *widget, gpointer data);
@@ -142,12 +154,14 @@ uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom);
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
-RoomGtkBox *newRoomAvailable(MYSQL_ROW row);
-void displayDataRoom(RoomGtkBox *room, MYSQL_ROW row, Session *session);
-ReservationBox *newReservation(MYSQL_ROW row);
+RoomGtkBox newRoomAvailable( MYSQL_ROW row);
+void displayDataRoom(RoomGtkBox room, MYSQL_ROW row, Session *session);
+ReservationBox newReservation();
+delReservation *addDelReservation(Session *session, uint32_t id);
+void displayReservationData(ReservationBox reservation,MYSQL_ROW row);
 void displayRoomEquipments(GtkImage *equipments[4], char *idRoom);
 void displayReservationDrinks(GtkImage *drinks[2], char *idBooking);
-void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search);
+void displayTimeSlotComboBox(RoomGtkBox room, char *idRoom, Search *search);
 void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slot);
 void reserveRoomBySearch(GtkWidget *widget, gpointer data);
 void planningNumbers(Calendar *calendar, struct tm *date);

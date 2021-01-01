@@ -20,16 +20,23 @@ Session *initSession(){
   if( session == NULL || search == NULL || calendar == NULL)
     exit(1);
 
+  search->startBooking = NULL;
+
   session->search = search;
   session->calendar = calendar;
+  session->nextReservation = NULL;
 
   return session;
 }
 
 void kamajiQuit(GtkWidget *w, gpointer data){
   Session *session = data;
+  /*printf("Delete-event\n");
+  printf("Search : %p\n", session->search);
+  printf("Calendar : %p\n", session->calendar);*/
   if( session->search != NULL ) free(session->search);
   if( session->calendar != NULL ) free(session->calendar);
+  freeDelReservations(&session->nextReservation);
   gtk_main_quit();
 }
 
@@ -40,6 +47,16 @@ void back(GtkWidget *widget, gpointer data){
   (*session->backFunction)(NULL, session);
 }
 
+
+// ------------------------------------------------
+
+void freeDelReservations(delReservation **start){
+  while(*start != NULL){
+    delReservation *remove = *start;
+    *start = (*start)->next;
+    free(remove);
+  }
+}
 
 // ------------------------------------------------
 
@@ -88,82 +105,78 @@ void fillComboBoxRooms(GtkComboBoxText *place,gpointer room){
 // ------------------------
 
 
-RoomGtkBox * newRoomAvailable(MYSQL_ROW row){
+RoomGtkBox newRoomAvailable(MYSQL_ROW row){
   char equipments[4][16] = {"monitor", "camera", "whiteboard", "projector"};
   char id[32];
   char location[64];
   char price[8];
-  RoomGtkBox *room = malloc( sizeof(RoomGtkBox) );
-  if( room == NULL ) exit(1);
+
+  RoomGtkBox room;
 
   GtkBuilder *b = gtk_builder_new_from_file(GLADE_FILE);
-  room->builder = b;
-  room->box = GTK_BOX(gtk_builder_get_object(b, "box_available_list_element"));
-  room->locationLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_where"));
-  room->timeSlotLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_time_slot"));
-  room->priceHalfDay = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_price"));
-  room->nbPersons = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_left_nb"));
-  room->bookingTimeSlotComboBox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(b, "combo_available_list_element_when"));
-  room->bookingButton = GTK_BUTTON(gtk_builder_get_object(b, "button_available_list_element_booking"));
+  room.builder = b;
+  room.box = GTK_BOX(gtk_builder_get_object(b, "box_available_list_element"));
+  room.locationLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_where"));
+  room.timeSlotLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_time_slot"));
+  room.priceHalfDay = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_price"));
+  room.nbPersons = GTK_LABEL(gtk_builder_get_object(b, "lbl_available_list_element_left_nb"));
+  room.bookingTimeSlotComboBox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(b, "combo_available_list_element_when"));
+  room.bookingButton = GTK_BUTTON(gtk_builder_get_object(b, "button_available_list_element_booking"));
   for(int i = 0; i < 4; i++){
     sprintf(id, "img_rooms_available_%s", equipments[i]);
-    room->equipments[i] = GTK_IMAGE(gtk_builder_get_object(b,id));
+    room.equipments[i] = GTK_IMAGE(gtk_builder_get_object(b,id));
   }
 
   sprintf(location, "%s - %s", row[1], row[2]);
   sprintf(price, "%s€", row[4]);
 
-  gtk_label_set_text( room->locationLabel, location );
-  gtk_label_set_text( room->nbPersons, row[3] );
-  gtk_label_set_text( room->priceHalfDay, price );
+  gtk_label_set_text( room.locationLabel, location );
+  gtk_label_set_text( room.nbPersons, row[3] );
+  gtk_label_set_text( room.priceHalfDay, price );
 
-  // time slot available
-  //printf("%s\n", time_slots[session->search->time_slot]);
   //style
-  background_color( GTK_WIDGET(room->box) , "#FFFFFF");
-  background_color( GTK_WIDGET(room->bookingButton) , "#444444");
+  background_color( GTK_WIDGET(room.box) , "#FFFFFF");
+  background_color( GTK_WIDGET(room.bookingButton) , "#444444");
   return room;
 }
 
 // ------------------------
 
-ReservationBox * newReservation(MYSQL_ROW row){
-  char location[64];
-  char price[8];
+ReservationBox newReservation(){
   char equipments[4][16] = {"monitor","camera","whiteboard","projector"};
   char id[32];
-  ReservationBox *reservation = malloc( sizeof(ReservationBox) );
-  if( reservation == NULL ) exit(1);
+  ReservationBox reservation;
 
   GtkBuilder *b = gtk_builder_new_from_file(GLADE_FILE);
-  reservation->idBooking = (uint32_t)atoi(row[0]);
-  reservation->box = GTK_BOX(gtk_builder_get_object(b, "box_reservation"));
-  reservation->locationLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_where"));
-  reservation->dateLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_when"));
-  reservation->timeSlotLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_time_slot"));
-  reservation->priceLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_price"));
+  reservation.box = GTK_BOX(gtk_builder_get_object(b, "box_reservation"));
+  reservation.locationLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_where"));
+  reservation.dateLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_when"));
+  reservation.timeSlotLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_time_slot"));
+  reservation.priceLabel = GTK_LABEL(gtk_builder_get_object(b, "lbl_reservation_price"));
   for(int i = 0; i < 4; i++){
     sprintf(id, "img_reservations_%s", equipments[i]);
-    reservation->equipments[i] = GTK_IMAGE(gtk_builder_get_object(b, id));
+    reservation.equipments[i] = GTK_IMAGE(gtk_builder_get_object(b, id ) );
   }
-  reservation->drinks[0] = GTK_IMAGE(gtk_builder_get_object(b, "img_reservations_coffee"));
-  reservation->drinks[1] = GTK_IMAGE(gtk_builder_get_object(b, "img_reservations_tea"));
-  reservation->edit = GTK_BUTTON(gtk_builder_get_object(b, "button_reservation_edit"));
-  reservation->delete = GTK_BUTTON(gtk_builder_get_object(b, "button_reservation_delete"));
+  reservation.drinks[0] = GTK_IMAGE(gtk_builder_get_object(b, "img_reservations_coffee"));
+  reservation.drinks[1] = GTK_IMAGE(gtk_builder_get_object(b, "img_reservations_tea"));
+  reservation.delete = GTK_BUTTON(gtk_builder_get_object(b, "button_reservation_delete"));
 
-  sprintf(location, "%s - %s", row[2], row[3]); // Room name - Place name
-  sprintf(price, "%s€", row[5]);
-
-  gtk_label_set_text( reservation->locationLabel, location );
-  gtk_label_set_text( reservation->priceLabel, price );
-  setDateReservation( row[6], reservation->dateLabel ); // date
-  gtk_label_set_text( reservation->timeSlotLabel, row[7] ); // time slot
-  displayRoomEquipments( reservation->equipments, row[1] );
-  displayReservationDrinks( reservation->drinks, row[0] );
-
-  //style
-  background_color( GTK_WIDGET(reservation->box) , "#FFFFFF");
+  background_color( GTK_WIDGET(reservation.box) , "#FFFFFF");
   return reservation;
+}
+
+void displayReservationData(ReservationBox reservation, MYSQL_ROW row){
+  char location[64];
+  char price[8];
+
+  sprintf(location, "%s - %s", row[2], row[3]);
+  sprintf(price, "%s€", row[5]);
+  gtk_label_set_text( reservation.locationLabel, location );
+  gtk_label_set_text( reservation.priceLabel, price);
+  setDateReservation( row[6], reservation.dateLabel ); // date
+  gtk_label_set_text( reservation.timeSlotLabel, row[7] ); // time slot
+  displayRoomEquipments( reservation.equipments, row[1] );
+  displayReservationDrinks( reservation.drinks, row[0] );
 }
 
 void displayReservationDrinks(GtkImage *drinks[2], char *idBooking){
@@ -202,6 +215,25 @@ int *getReservationDrinks(char *idBooking){
   mysql_close(conn);
 
   return drinks;
+}
+
+// ------------------------
+
+void confirmDeleteReservation(GtkWidget *widget, gpointer data){
+  delReservation *delReservation = data;
+  MYSQL *conn = connect_db();
+  MYSQL_ROW row;
+  MYSQL_RES *result;
+  char request[128];
+
+  sprintf(request, "update BOOKING set state = 0 where id = %u;",delReservation->idBooking);
+  result = query(conn, request);
+
+  gtk_widget_destroy(GTK_WIDGET(delReservation->dialogWindow));
+  open_reservations_window(NULL,delReservation->session);
+
+  mysql_free_result(result);
+  mysql_close(conn);
 }
 
 // ------------------------
@@ -250,18 +282,18 @@ int *getRoomsEquipment(char *idRoom){
 
 // ----------------------
 
-void displayTimeSlotComboBox(RoomGtkBox *room, char *idRoom, Search *search){
+void displayTimeSlotComboBox(RoomGtkBox room, char *idRoom, Search *search){
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
   char idTimeSlot[4];
   sprintf( idTimeSlot, "%d", search->time_slot);
 
   if( search->time_slot != 2 && isRestDayAvailable( search->date, search->time_slot, idRoom ) == 1 ){ // available the rest of the day
-    gtk_combo_box_set_active_id (GTK_COMBO_BOX(room->bookingTimeSlotComboBox), idTimeSlot );
-    gtk_widget_show( GTK_WIDGET( room->bookingTimeSlotComboBox ) );
+    gtk_combo_box_set_active_id (GTK_COMBO_BOX(room.bookingTimeSlotComboBox), idTimeSlot );
+    gtk_widget_show( GTK_WIDGET( room.bookingTimeSlotComboBox ) );
   }else if(search->time_slot != 2){
-      gtk_combo_box_text_remove_all (room->bookingTimeSlotComboBox);
-      gtk_combo_box_text_append(room->bookingTimeSlotComboBox, idTimeSlot, time_slots[search->time_slot] );
-      gtk_combo_box_set_active_id (GTK_COMBO_BOX(room->bookingTimeSlotComboBox), idTimeSlot );
+      gtk_combo_box_text_remove_all (room.bookingTimeSlotComboBox);
+      gtk_combo_box_text_append(room.bookingTimeSlotComboBox, idTimeSlot, time_slots[search->time_slot] );
+      gtk_combo_box_set_active_id (GTK_COMBO_BOX(room.bookingTimeSlotComboBox), idTimeSlot );
     }
 }
 
@@ -525,25 +557,6 @@ void setDateReservation(char *dateSQL, GtkLabel *label){
   gtk_label_set_text(label, date);
 }
 
-// ------------------------
-
-void confirmDeleteReservation(GtkWidget *widget, gpointer data){
-  ReservationBox *reservation = data;
-  MYSQL *conn = connect_db();
-  MYSQL_ROW row;
-  MYSQL_RES *result;
-  char request[128];
-
-  sprintf(request, "update BOOKING set state = 0 where id = %u;",reservation->idBooking);
-  result = query(conn, request);
-
-  gtk_widget_destroy(GTK_WIDGET(reservation->dialogWindow));
-  gtk_widget_destroy(GTK_WIDGET(reservation->session->window));
-  open_reservations_window(NULL,reservation->session);
-
-  mysql_free_result(result);
-  mysql_close(conn);
-}
 
 // ------------------------
 

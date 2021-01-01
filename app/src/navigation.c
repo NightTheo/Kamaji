@@ -32,6 +32,7 @@ void open_home_window(GtkWidget *widget, gpointer data){
   click_button(session, "button_home_search", open_new_res_window);
   click_button(session, "button_home_calendars", open_place_room_window);
 
+  freeDelReservations(&session->nextReservation);
 }
 
 // ----------------------
@@ -63,7 +64,7 @@ void newWindow(char* file, char* idWindow, Session *session){
 
   builder = gtk_builder_new_from_file(file);
   window = GTK_WIDGET(gtk_builder_get_object(builder, idWindow));
-  g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(kamajiQuit), session);
+  g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(kamajiQuit), session);
 
   session->builder = builder;
   session->window = GTK_WINDOW(window);
@@ -94,12 +95,13 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
   Session *session = data;
   GtkGrid *gridContainer;
   GtkButton *backButton;
-  ReservationBox *reservation;
+  ReservationBox reservation;
+  delReservation *delReservation;
   MYSQL_ROW row;
   MysqlSelect selectReservations;
   int i = 0;
 
-
+  session->backFunction = open_home_window;
   close_and_open_window(session,"window_reservations");
   gridContainer = GTK_GRID( gtk_builder_get_object(session->builder, "grid_reservations") );
   backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_reservations") );
@@ -107,14 +109,14 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
   selectReservations = findReservationsInDB();
 
   while ((row = mysql_fetch_row(selectReservations.result)) != NULL){
-    reservation = newReservation(row);
-    reservation->session = session;
+    reservation = newReservation();
+    displayReservationData(reservation, row);
+      delReservation = addDelReservation(session, (uint32_t)atoi(row[0]));
+      session->nextReservation = delReservation;
 
-    //connecter les deux boutons
-    g_signal_connect (reservation->edit,"clicked",G_CALLBACK(editReservation),session);
-    g_signal_connect (reservation->delete,"clicked",G_CALLBACK(deleteReservation), reservation);
+    g_signal_connect (reservation.delete,"clicked",G_CALLBACK(deleteReservation), delReservation);
 
-    gtk_grid_attach (gridContainer, GTK_WIDGET(reservation->box),i%2, i/2, 1, 1);
+    gtk_grid_attach (gridContainer, GTK_WIDGET(reservation.box),i%2, i/2, 1, 1);
     i++;
   }
 
@@ -122,13 +124,17 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
   mysql_close(selectReservations.conn);
 }
 
-void editReservation(GtkWidget *widget,gpointer data){
-  printf("Coucou edit\n");
+delReservation *addDelReservation(Session *session, uint32_t id){
+  delReservation *inter = malloc( sizeof(delReservation) );
+  if( inter == NULL ) exit(1);
+  inter->idBooking = id;
+  inter->session = session;
+  inter->next = session->nextReservation;
+  return inter;
 }
 
 void deleteReservation(GtkWidget *widget,gpointer data){
-  ReservationBox *reservation = data;
-  char idBooking[8];
+  delReservation *delReservation = data;
   GtkWidget *window;
   GtkBuilder *builder;
   GtkButton *no;
@@ -141,9 +147,9 @@ void deleteReservation(GtkWidget *widget,gpointer data){
   no = GTK_BUTTON(gtk_builder_get_object(builder, "button_delete_reservation_right"));
   yes = GTK_BUTTON(gtk_builder_get_object(builder, "button_delete_reservation_left"));
 
-  reservation->dialogWindow = window;
+  delReservation->dialogWindow = window;
   g_signal_connect(no, "clicked", G_CALLBACK(abordDeleteReservation), window);
-  g_signal_connect(yes, "clicked", G_CALLBACK(confirmDeleteReservation), reservation);
+  g_signal_connect(yes, "clicked", G_CALLBACK(confirmDeleteReservation), delReservation);
 
   gtk_widget_show_all(window);
 }
@@ -311,7 +317,7 @@ void getSearchDrinksCheckbox(GtkWidget *widget,gpointer data){
 void open_rooms_available_window(GtkWidget *widget,gpointer data){
   Session *session = data;
   Search *search = session->search;
-  RoomGtkBox *room;
+  RoomGtkBox room;
   GtkContainer *listContainer;
   MYSQL_ROW row;
   MysqlSelect select;
@@ -332,23 +338,26 @@ void open_rooms_available_window(GtkWidget *widget,gpointer data){
 
     room = newRoomAvailable(row);
     displayDataRoom(room, row, session);
-    gtk_container_add ( listContainer, GTK_WIDGET(room->box) );
+    gtk_container_add ( listContainer, GTK_WIDGET(room.box) );
   }
 
   mysql_free_result(select.result);
   mysql_close(select.conn);
 }
 
-void displayDataRoom(RoomGtkBox *room, MYSQL_ROW row, Session *session){
+void displayDataRoom(RoomGtkBox room, MYSQL_ROW row, Session *session){
   Search *search = session->search;
   Booking *booking;
 
-  displayRoomEquipments(room->equipments, row[0]);
+  displayRoomEquipments(room.equipments, row[0]);
   displayTimeSlotComboBox(room, row[0], search);
-  displayTimeSlotLabel(room->timeSlotLabel, row[0], search->date, search->time_slot );
+  displayTimeSlotLabel(room.timeSlotLabel, row[0], search->date, search->time_slot );
+
   booking = prepareBooking(search, room, row[0]);
   booking->session = session;
-  g_signal_connect (room->bookingButton,"clicked",G_CALLBACK(reserveRoomBySearch),booking);
+  search->startBooking = booking;
+
+  g_signal_connect (room.bookingButton,"clicked",G_CALLBACK(reserveRoomBySearch),booking);
 }
 
 uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom){
@@ -364,7 +373,7 @@ uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom){
 }
 // ----------------------
 
-Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){
+Booking *prepareBooking( Search *search, RoomGtkBox room, char *idRoom ){
   Booking *booking;
   GtkComboBox *timeSlotComboBox;
   int priceHalfDay;
@@ -374,6 +383,7 @@ Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){
   booking = malloc( sizeof(Booking) );
   if( booking == NULL ) exit(1);
 
+  strcpy(booking->test, "test");
   booking->idRoom = atoi( idRoom );
   booking->nb_persons = search->nb_persons;
   booking->date = search->date;
@@ -381,15 +391,17 @@ Booking *prepareBooking( Search *search, RoomGtkBox *room, char *idRoom ){
     booking->drinks[i] = search->drinks[i];
 
   // get the time slot from the comboBoxText
-  timeSlotComboBox = GTK_COMBO_BOX( gtk_builder_get_object(room->builder, "combo_available_list_element_when") );
+  timeSlotComboBox = GTK_COMBO_BOX( gtk_builder_get_object(room.builder, "combo_available_list_element_when") );
   booking->time_slot = atoi( gtk_combo_box_get_active_id(timeSlotComboBox) );
 
   for(int i = 0; i < 2; i++) drinks[i] = search->drinks[i];
   price += getPriceDrinks(drinks, search->id_place);
 
-  priceHalfDay = atoi( gtk_label_get_text(room->priceHalfDay) );
+  priceHalfDay = atoi( gtk_label_get_text(room.priceHalfDay) );
   price += search->time_slot == 2 ? priceHalfDay * 2 : priceHalfDay ;
   booking->price = price;
+
+  booking->next = search->startBooking;
 
   return booking;
 }
@@ -439,10 +451,19 @@ void reserveRoomBySearch(GtkWidget *widget, gpointer data){
 
   query(conn, request);
   mysql_close(conn);
-  free(b);
-  b = NULL;
+
+  freeBookings(&session->search->startBooking);
 
   open_reservations_window(NULL, session);
+}
+
+
+void freeBookings(Booking **start){
+  while(*start != NULL){
+    Booking *remove = *start;
+    *start = (*start)->next;
+    free(remove);
+  }
 }
 
 // ----------------------
