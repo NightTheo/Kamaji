@@ -887,6 +887,7 @@ void reserveRoomByPlanning(Booking *b){
   b->nb_persons, (int)b->price, b->date.year, b->date.month, b->date.day, time_slots[b->time_slot], b->idRoom );
 
   query(conn, request);
+  insertDrinks(b->drinks, conn );
   mysql_close(conn);
   free(b);
   b = NULL;
