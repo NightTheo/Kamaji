@@ -166,6 +166,7 @@ void displayReservationDrinks(GtkImage *drinks[2], char *idBooking);
 void displayTimeSlotComboBox(RoomGtkBox room, char *idRoom, Search *search);
 void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slot);
 void reserveRoomBySearch(GtkWidget *widget, gpointer data);
+void insertDrinks(int drinks[2], MYSQL *conn);
 void planningNumbers(Calendar *calendar, struct tm *date);
 void click_button_planning(Session *session, char *idButton);
 void updatePlanningNumbers(int *startDate, GtkLabel *days[5]);

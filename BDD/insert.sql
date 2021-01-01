@@ -9,8 +9,9 @@ INSERT INTO PLACE(id,name,address,map) VALUES(3,'PPA','28-32 Rue de l\'Amiral Mo
 
 INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (1,'A12',6,19,1);
 INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (2,'A22',10,30,1);
-INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (3,'Salle 2',4,15,2);
-INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (4,'Salle 3',8,14,3);
+INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (3,'A07',60,142,1);
+INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (4,'Salle 2',4,15,2);
+INSERT INTO ROOM(id,name,max_capacity,price_half_day,place) VALUES (5,'Salle 3',8,14,3);
 
 
 INSERT INTO BOOKING(id,nb_persons,price,date_booking,time_slot,state,room) VALUES(1,6,25,'2020-11-24','14h - 20h',1,1);

@@ -6,6 +6,7 @@ connet the signals for the navigation between the windows
 
 */
 
+#include <stdint.h>
 #include <time.h>
 #include <gtk/gtk.h>
 #include "../inc/navigation.h"
@@ -453,14 +454,48 @@ void reserveRoomBySearch(GtkWidget *widget, gpointer data){
   VALUES(%d,%d,'%d-%d-%d','%s',1,%d) ;",\
   b->nb_persons, (int)b->price, b->date.year, b->date.month, b->date.day, time_slots[b->time_slot], b->idRoom );
 
-  //add in _booking_include_drink
 
   query(conn, request);
+  insertDrinks(b->drinks, conn );
+
   mysql_close(conn);
 
   freeBookings(&session->search->startBooking);
 
   open_reservations_window(NULL, session);
+}
+
+void insertDrinks(int drinks[2], MYSQL *conn){
+  uint32_t idBooking;
+  char request[512];
+  MYSQL *connInsert = connect_db();
+  MYSQL_RES *resultId;
+  MYSQL_RES *resultInsert;
+  MYSQL_ROW row;
+  uint8_t i;
+
+  resultId = query(conn, "SELECT LAST_INSERT_ID()");
+  row = mysql_fetch_row(resultId);
+  if( row != NULL && atoi(*row) > 0){
+    idBooking = (uint32_t)atoi(*row);
+
+    for(i = 0; i < 2; i++){
+      if( drinks[i] ){
+        sprintf(request, "INSERT INTO _booking_include_drink VALUES(%d,%d)", idBooking, i+1);
+        resultInsert = query(connInsert, request);
+        mysql_free_result(resultInsert);
+      }
+
+    }
+
+  }else{
+    printf("Error insert drinks\n");
+    exit(1);
+  }
+
+  mysql_free_result(resultId);
+  mysql_close(connInsert);
+
 }
 
 
