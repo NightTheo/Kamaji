@@ -17,14 +17,19 @@ connet the signals for the navigation between the windows
 #define GLADE_FILE "ui/glade/home.glade"
 
 
-// ----------------------
 /*
-function: homekamaji
-Open Window_home
+-----------------------------------------------------------------------------------------------------------
+Function : open_home_window
+-------------------------
+Open the home window, the first one. User can choose between
+see all the reservations, search the rooms availables or see the planning
+of a room
+-------------------------
+GtkWidget *widget : widget activated to open the window
+Session *session : address of the struct Session
 */
 void open_home_window(GtkWidget *widget, gpointer data){
   Session *session = data;
-
   newWindow(GLADE_FILE, "window_home", session);
 
   session->backFunction = open_home_window;
@@ -36,9 +41,16 @@ void open_home_window(GtkWidget *widget, gpointer data){
   freeDelReservations(&session->nextReservation);
 }
 
-// ----------------------
+
 /*
-click_button
+-----------------------------------------------------------------------------------------------------------
+Function : click_button
+-------------------------
+Get a button and give it the function to call when is clicked
+-------------------------
+Session *session : adress of the struct Session
+char *idButton : the id of the button in the xml file
+void (*function) : the callback function called when the button is clicked
 */
 void click_button(Session *session, char *idButton, void (*function)){
   GtkWidget *button;
@@ -46,18 +58,31 @@ void click_button(Session *session, char *idButton, void (*function)){
   g_signal_connect (button,"clicked",G_CALLBACK(function),session);
 }
 
-// ----------------------
+
 /*
-close_and_open_window
+-----------------------------------------------------------------------------------------------------------
+Function : close_and_open_window
+-------------------------
+Close the current window present in the struct Session and open a new one
+-------------------------
+Session *session : address of the struct Session
+char *idNewWindow : id of the new window in the xml file
 */
 void close_and_open_window(Session *session, char *idNewWindow){
   gtk_widget_destroy( GTK_WIDGET( session->window ) );
   newWindow(GLADE_FILE, idNewWindow, session);
 }
 
-// ----------------------
+
 /*
-newWindow
+-----------------------------------------------------------------------------------------------------------
+Function : newWindow
+-------------------------
+Close the current window present in the struct Session and open a new one
+-------------------------
+char* file : path of the xml file
+char* idWindow : id of the widow in the xml file
+Session *session : address of the struct Session
 */
 void newWindow(char* file, char* idWindow, Session *session){
   GtkBuilder      *builder;
@@ -76,7 +101,16 @@ void newWindow(char* file, char* idWindow, Session *session){
   gtk_widget_show_all(window);
 }
 
-// ----------------------
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : background_color
+-------------------------
+Change the back ground color of a widget
+-------------------------
+GtkWidget *widget : the widget to change
+char *color : color in hexadecimal like #RRGGBB
+*/
 void background_color( GtkWidget *widget, char *color ){
   GtkCssProvider * cssProvider = gtk_css_provider_new();    //store the css
 
@@ -88,11 +122,23 @@ void background_color( GtkWidget *widget, char *color ){
   gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(cssProvider),GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
+
+
+
 //##############################################################################
 // ----------------------
 // RESERVATIONS
 
-void open_reservations_window(GtkWidget *widget,gpointer data){
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : open_reservations_window
+-------------------------
+Open the window wich contains the list of all the reservations
+-------------------------
+GtkWidget *widget : widget activated to open the window
+Session *session : address of the struct Session
+*/
+void open_reservations_window(GtkWidget *widget, gpointer data){
   Session *session = data;
   GtkGrid *gridContainer;
   GtkButton *backButton;
@@ -125,6 +171,20 @@ void open_reservations_window(GtkWidget *widget,gpointer data){
   mysql_close(selectReservations.conn);
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : addDelReservation
+-------------------------
+Add a node in the linked list of delReservation structs.
+The struct is passed in the callback function when the delete button is clicked
+-------------------------
+Session *session : address of the struct Session
+uint32_t id : the id of the reservation (BOOKING.id in the DB)
+-------------------------
+Return values
+    delReservation *inter: the new struct in the linked list
+*/
 delReservation *addDelReservation(Session *session, uint32_t id){
   delReservation *inter = malloc( sizeof(delReservation) );
   if( inter == NULL ) exit(1);
@@ -134,8 +194,18 @@ delReservation *addDelReservation(Session *session, uint32_t id){
   return inter;
 }
 
-void deleteReservation(GtkWidget *widget,gpointer data){
-  delReservation *delReservation = data;
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : deleteReservation
+-------------------------
+Open a dialog window, to be sure if the user wants to delete the booking.
+If yes, the state column in BOOKING is passed to 0.
+-------------------------
+GtkWidget *widget : widget activated to open the window, here the delete button
+delReservation *delReservation: pointer of struct which contains the id of the reservation to delete & the Session
+*/
+void deleteReservation(GtkWidget *widget, delReservation *delReservation){
   GtkWidget *window;
   GtkBuilder *builder;
   GtkButton *no;
@@ -155,13 +225,21 @@ void deleteReservation(GtkWidget *widget,gpointer data){
   gtk_widget_show_all(window);
 }
 
-void abordDeleteReservation(GtkWidget *widget, gpointer data){
-  GtkWidget *window = data;
+void abordDeleteReservation(GtkWidget *widget, GtkWidget *window){
   gtk_widget_destroy(window);
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : findReservationsInDB
+-------------------------
+Select the data of all the active reservations in DB
+The connexion will be closed later so it has to be return, here in the struct MysqlSelect
+-------------------------
+Return values
+    MysqlSelect select : struct with the connexion of DB and the result of the select
+*/
 MysqlSelect findReservationsInDB(){
   MysqlSelect select;
 
@@ -177,11 +255,18 @@ MysqlSelect findReservationsInDB(){
   return select;
 }
 
+
+
 // ----------------------
 // NEW RESERVATIONS
 /*
-function: open_new_res_window
-Open window_new_reservation
+-----------------------------------------------------------------------------------------------------------
+Function : open_new_res_window
+-------------------------
+Open the servation window wich get the arguments of the search
+-------------------------
+GtkWidget *widget : widget activated to open the window
+delReservation *delReservation: pointer of struct which contains the id of the reservation to delete & the Session
 */
 void open_new_res_window(GtkWidget *widget, gpointer data){
   Session *session = data;
@@ -217,17 +302,35 @@ void open_new_res_window(GtkWidget *widget, gpointer data){
   click_button(session, "button_new_res", getSearchArguments);
 }
 
-void freeCheckDataSearch(GtkWidget *widget,gpointer data){
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : freeCheckDataSearch
+-------------------------
+Free the array check.
+check is an array of GtkWidget*. It contains the validation button, the ComboBox of places and the Calendar.
+-------------------------
+GtkWidget *widget : widget activated to open the window,
+gpointer data: (void*) the check array of widgets *
+*/
+void freeCheckDataSearch(GtkWidget *widget, gpointer data){
   GtkWidget **check = data;
   free(check);
 }
 
-// ----------------------
 
-void getSearchArguments(GtkWidget *widget,gpointer data){
-  Session *session = data;
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getSearchArguments
+-------------------------
+Get the widgets used to specify the search, then get the data inside.
+And open the the equipments window.
+-------------------------
+GtkWidget *widget : widget activated to open the window,
+Session *session : address of the struct Session
+*/
+void getSearchArguments(GtkWidget *widget, Session *session){
   Search *search = session->search;
-
   GtkComboBox *inputplace;
   GtkComboBox *inputTime;
   GtkSpinButton *inputNbPeoples;
@@ -235,7 +338,7 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
 
   inputplace = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_where"));
   inputNbPeoples = GTK_SPIN_BUTTON(gtk_builder_get_object(session->builder, "spin_new_reservation_group"));
-  inputTime= GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_when"));
+  inputTime = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_when"));
   inputDate = GTK_CALENDAR(gtk_builder_get_object(session->builder, "calendar_new_res"));
 
   search->id_place = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputplace) ) );
@@ -251,8 +354,17 @@ void getSearchArguments(GtkWidget *widget,gpointer data){
 //##############################################################################
 // ----------------------
 // EQUIPMENTS
-void open_equipment_window(GtkWidget *widget,gpointer data){
-  Session* session = data;
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : open_equipment_window
+-------------------------
+Open the window where the user chooses the desired equipments.
+-------------------------
+GtkWidget *widget : widget activated to open the window
+Session *session : address of the struct Session
+*/
+void open_equipment_window(GtkWidget *widget, gpointer data){
+  Session *session = data;
   GtkButton *backButton;
 
   session->backFunction = open_new_res_window;
@@ -263,9 +375,17 @@ void open_equipment_window(GtkWidget *widget,gpointer data){
   click_button(session, "button_equipment_search", getEquipmentsCheckbox);
 }
 
-// ----------------------
-void getEquipmentsCheckbox(GtkWidget *widget,gpointer data){
-  Session *session = data;
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getEquipmentsCheckbox
+-------------------------
+Get the value of the equipment's checkboxes, put them in an array of 0 and 1 and open the drinks window
+-------------------------
+GtkWidget *widget : widget activated to open the window
+Session *session : address of the struct Session
+*/
+void getEquipmentsCheckbox(GtkWidget *widget, Session *session){
   int equipments[4] = {0};
 
   GtkCheckButton *checkMonitor = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_monitor"));
@@ -284,9 +404,20 @@ void getEquipmentsCheckbox(GtkWidget *widget,gpointer data){
   open_drink_window(NULL, session);
 }
 
+
+
 // ----------------------
 // DRINK
-void open_drink_window(GtkWidget *widget,gpointer data){
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : open_drink_window
+-------------------------
+Open the window where the user chooses the desired drinks.
+-------------------------
+GtkWidget *widget : widget activated to open the window
+Session *session : address of the struct Session
+*/
+void open_drink_window(GtkWidget *widget, gpointer data){
   Session *session = data;
   GtkButton *backButton;
 
@@ -297,10 +428,18 @@ void open_drink_window(GtkWidget *widget,gpointer data){
 
   click_button(session, "button_drink_next", getSearchDrinksCheckbox);
 }
-// ----------------------
 
-void getSearchDrinksCheckbox(GtkWidget *widget,gpointer data){
-  Session *session = data;
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getSearchDrinksCheckbox
+-------------------------
+Get the value of the drinks's checkboxes, put them in the array of 0 and 1 Search.drinks and open the rooms available window
+-------------------------
+GtkWidget *widget : widget activated to open the window
+Session *session : address of the struct Session
+*/
+void getSearchDrinksCheckbox(GtkWidget *widget, Session *session){
   Search *search = session->search;
   int drinks[2] = {0};
 
@@ -320,8 +459,16 @@ void getSearchDrinksCheckbox(GtkWidget *widget,gpointer data){
 //##############################################################################
 // ----------------------
 // ROOMS AVAILABLES
-
-void open_rooms_available_window(GtkWidget *widget,gpointer data){
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : open_rooms_available_window
+-------------------------
+Open the window with the list of all the rooms available with the desired conditions
+-------------------------
+GtkWidget *widget : widget activated to open the window
+Session *session : address of the struct Session
+*/
+void open_rooms_available_window(GtkWidget *widget, gpointer data){
   Session *session = data;
   Search *search = session->search;
   RoomGtkBox room;
@@ -338,6 +485,7 @@ void open_rooms_available_window(GtkWidget *widget,gpointer data){
 
   GtkWidget *viewport_available_right = GTK_WIDGET(gtk_builder_get_object(session->builder,"viewport_available_right"));
   background_color(viewport_available_right , "#FFFFFF");
+  displayMapPlace(session->builder, search->id_place);
 
   select = findAvailableRooms(search);
   while ((row = mysql_fetch_row(select.result)) != NULL){
@@ -352,6 +500,99 @@ void open_rooms_available_window(GtkWidget *widget,gpointer data){
   mysql_close(select.conn);
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayMapPlace
+-------------------------
+Change the path of the image of the map
+-------------------------
+GtkBuilder *builder : address of the builder which built the image
+*/
+void displayMapPlace(GtkBuilder *builder, uint32_t id_place){
+  char *path;
+  GtkImage *image;
+
+  path = getPathMapPlace(id_place);
+  image = GTK_IMAGE( gtk_builder_get_object(builder,"img_rooms_available_") );
+  gtk_image_set_from_file (image, path);
+
+  free(path);
+}
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getPathMapPlace
+-------------------------
+Get the path of the map image in the DB
+-------------------------
+uint32_t id_place : id of the place wanted
+-------------------------
+Return values
+    char *path : the path found, or the default image's path
+*/
+char *getPathMapPlace(uint32_t id_place){
+  MYSQL_ROW row;
+  MYSQL *conn = connect_db();
+  MYSQL_RES *result;
+  char request[64];
+  char *path;
+  uint8_t error = 0;
+
+  path = malloc( sizeof(char) * 64 );
+  if( path == NULL ) exit(1);
+
+  sprintf(request, "SELECT map FROM PLACE WHERE id = %d", id_place);
+  result = query(conn, request);
+  if((row = mysql_fetch_row(result)) != NULL){
+    if( strlen(*row) < 64)
+      strcpy( path, *row );
+    else error = 1;
+  }
+  else error = 1;
+
+  if( !fileExists(path) ) error = 1;
+
+  if(error) strcpy(path, "ui/img/maps/default.jpg");
+
+  mysql_free_result(result);
+  mysql_close(conn);
+
+  return path;
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : fileExists
+-------------------------
+says if the given path is a file, at least an readable file
+-------------------------
+char *path : path of the file
+-------------------------
+Return values
+    uint8_t exists : boolean, 1 if the file exists, else 0
+*/
+uint8_t fileExists(char *path){
+  uint8_t exists;
+  FILE *fp = fopen( path, "r" );
+  exists = fp != NULL ? 1 : 0;
+  fclose(fp);
+  return exists;
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayDataRoom
+-------------------------
+Set all the data selected in DB in the widgets.
+Add node in the linked list of booking
+-------------------------
+RoomGtkBox room : struct of the room with all the widgets
+MYSQL_ROW row : array of strings of the current found room
+Session *session : address of the struct Session
+*/
 void displayDataRoom(RoomGtkBox room, MYSQL_ROW row, Session *session){
   Search *search = session->search;
   Booking *booking;
@@ -367,19 +608,46 @@ void displayDataRoom(RoomGtkBox room, MYSQL_ROW row, Session *session){
   g_signal_connect (room.bookingButton,"clicked",G_CALLBACK(reserveRoomBySearch),booking);
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : hasRequiredEquipments
+-------------------------
+Check if a room has the equipments required in the search
+-------------------------
+int requiredEquipments[4] : array of the required equipement : 1 is required, 0 not
+char *idRoom : string of the id of the room in DB
+-------------------------
+Return value
+    uint8_t state : boolean, 1 if the room possed all the desired equipment
+*/
 uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom){
+  uint8_t state = 1;
   int *roomEquipments = getRoomsEquipment(idRoom);
 
   for(int i = 0; i < 4; i++)
     if( requiredEquipments[i] == 1 && roomEquipments[i] == 0)
-      return 0;
+      state = 0;
 
   free(roomEquipments);
   roomEquipments = NULL;
-  return 1;
+  return state;
 }
-// ----------------------
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : prepareBooking
+-------------------------
+Check if a room has the equipments required in the search
+-------------------------
+Search *search : address of struct Search
+RoomGtkBox room :
+char *idRoom : id of the room
+-------------------------
+Return value
+    Booking *booking : struct with all the data ready to insert in BOOKING table
+*/
 Booking *prepareBooking( Search *search, RoomGtkBox room, char *idRoom ){
   Booking *booking;
   GtkComboBox *timeSlotComboBox;
@@ -413,8 +681,20 @@ Booking *prepareBooking( Search *search, RoomGtkBox room, char *idRoom ){
   return booking;
 }
 
-//
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getPriceDrinks
+-------------------------
+Get the sum of the price of the desired drinks.
+If a drink is desired, get the price proposed by the place and sum it to the int price
+-------------------------
+int drinks[2] : array of the desired drinks
+int idPlace : id of the place in DB
+-------------------------
+Return value
+    int price : sum of the price of the desired drinks.
+*/
 int getPriceDrinks(int drinks[2], int idPlace){
   int price = 0;
   char request[512];
@@ -441,10 +721,17 @@ int getPriceDrinks(int drinks[2], int idPlace){
   return price;
 }
 
-// ----------------------
 
-void reserveRoomBySearch(GtkWidget *widget, gpointer data){
-  Booking *b = data;
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : reserveRoomBySearch
+-------------------------
+insert the reservation in DB. Then open the reservations window.
+-------------------------
+GtkWidget *widget: widget activated to open the window, here the booking button
+Booking *b : address of the struct Booking, which contains all the data of the room the user wants to book
+*/
+void reserveRoomBySearch(GtkWidget *widget, Booking *b){
   Session *session = b->session;
   MYSQL *conn = connect_db();
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
@@ -455,16 +742,27 @@ void reserveRoomBySearch(GtkWidget *widget, gpointer data){
   b->nb_persons, (int)b->price, b->date.year, b->date.month, b->date.day, time_slots[b->time_slot], b->idRoom );
 
 
-  query(conn, request);
+  MYSQL_RES *result = query(conn, request);
   insertDrinks(b->drinks, conn );
 
-  mysql_close(conn);
-
   freeBookings(&session->search->startBooking);
+
+  mysql_close(conn);
+  mysql_free_result(result);
 
   open_reservations_window(NULL, session);
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : insertDrinks
+-------------------------
+Get the last id inserted in BOOKING then insert the drinks in DB (table _booking_include_drink).
+-------------------------
+int drinks[2] : array of the desired drinks
+MYSQL *conn : connexion of the DB which inserted the booking
+*/
 void insertDrinks(int drinks[2], MYSQL *conn){
   uint32_t idBooking;
   char request[512];
@@ -499,6 +797,14 @@ void insertDrinks(int drinks[2], MYSQL *conn){
 }
 
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : freeBookings
+-------------------------
+Free all the linked list of struct Booking.
+-------------------------
+Booking **start : address of the pointer of the last node added.
+*/
 void freeBookings(Booking **start){
   while(*start != NULL){
     Booking *remove = *start;
@@ -507,8 +813,19 @@ void freeBookings(Booking **start){
   }
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : findAvailableRooms
+-------------------------
+Get the available rooms in DB with the specifics conditions of the user.
+-------------------------
+Search *s : address of the struct Search wich contains all the data the user entered for the search
+-------------------------
+Return value
+    MysqlSelect select : struct storing the connexionand the result.
+                         The conn will be closed later, so the connexion has to be returned
+*/
 MysqlSelect findAvailableRooms(Search *s){
   Date d = s->date;
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
@@ -550,8 +867,21 @@ MysqlSelect findAvailableRooms(Search *s){
   return select;
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : isRestDayAvailable
+-------------------------
+Invert the time slot: "8h - 14h" becomes "14h - 20h", by a xor of the time slot searched.
+The call the function isTimeSlotAvailable with the inverted time slot.
+-------------------------
+ Date date : desired date in search
+ int time_slot_int : desired time slot in search
+ char *idRoom : string of the id of the room in DB
+-------------------------
+Return value
+    int : boolean, 1 if the rest of the day is available, 0 if not
+*/
 int isRestDayAvailable( Date date, int time_slot_int, char *idRoom ){
   char dateString[16];
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
@@ -563,6 +893,20 @@ int isRestDayAvailable( Date date, int time_slot_int, char *idRoom ){
   return isTimeSlotAvailable(time_slot, dateString, idRoom);
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : isTimeSlotAvailable
+-------------------------
+select in DB
+-------------------------
+ char *time_slot : string of the time slot
+ char *date : date with the sql format yyyy-[1-12]-[1-31]
+ char *idRoom : string of the id of the room in DB
+-------------------------
+Return value
+    int : 1 or -1. 1 if the rest of the time slot of this room at this date is available,  AND -1 if not !!!
+*/
 int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
   int isAvailable;
   MYSQL *conn = connect_db();
@@ -570,7 +914,7 @@ int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
   MYSQL_ROW row;
   char request[512];
 
-  // return "1" if a room is available at a date and a time slot, "0" if not
+  // return "1" if a room is available at a date and a time slot, "-1" if not
   sprintf(request, "SELECT IF(\
   	(SELECT COUNT(time_slot) FROM BOOKING\
   	WHERE room = %s\
@@ -593,11 +937,17 @@ int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
   return isAvailable;
 }
 
-//##############################################################################
-// ----------------------
-//PLACE ROOM
 
-void open_place_room_window(GtkWidget *widget,gpointer data){
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : open_place_room_window
+-------------------------
+Open the window with the selection of place and room as you want for reservation
+-------------------------
+ GtkWidget *widget: widget activated to open the window, here the button_home_calendars button
+ Session *session : address of the struct Session
+*/
+void open_place_room_window(GtkWidget *widget, gpointer data){
   Session *session = data;
   GtkComboBoxText *place, *room;
   GtkButton *nextButton, *backButton;
@@ -623,10 +973,17 @@ void open_place_room_window(GtkWidget *widget,gpointer data){
   click_button(session, "button_place_room", getIdRoom);
 }
 
-// ----------------------
 
-void getIdRoom(GtkWidget *widget, gpointer data){
-  Session *session = data;
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getIdRoom
+-------------------------
+Retrieve id of room selected in the place room window
+-------------------------
+ GtkWidget *widget: widget activated, here the validation button in place room window
+ Session *session : address of the struct Session
+*/
+void getIdRoom(GtkWidget *widget, Session *session){
   GtkComboBox *place = GTK_COMBO_BOX( gtk_builder_get_object( session->builder, "combo_place_room_place" ) );
   GtkComboBox *room = GTK_COMBO_BOX( gtk_builder_get_object( session->builder, "combo_place_room_room" ) );
   Calendar *calendar = session->calendar;
@@ -637,9 +994,16 @@ void getIdRoom(GtkWidget *widget, gpointer data){
   open_planning_window(NULL, session);
 }
 
-// ----------------------
-//PLANNING
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : open_planning_window
+-------------------------
+Open the planning window.
+-------------------------
+GtkWidget *widget: widget activated to open the window.
+Session *session : address of the struct Session
+*/
 void open_planning_window(GtkWidget *widget,gpointer data){
   Session *session = data;
   GtkButton *backButton;
@@ -663,8 +1027,16 @@ void open_planning_window(GtkWidget *widget,gpointer data){
   click_button(session, "button_planning_next", open_drink_window_2);
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getCalendarWidgets
+-------------------------
+Get all the widgets wich will be updated and put them in the Calendar struct
+-------------------------
+ Calendar *c : address of the struct Calendar
+ GtkBuilder *builder : builder wich built the planning window
+*/
 void getCalendarWidgets(Calendar *c, GtkBuilder *builder){
   int i, j;
   char id[32];
@@ -696,10 +1068,19 @@ void getCalendarWidgets(Calendar *c, GtkBuilder *builder){
   c->next = GTK_BUTTON( gtk_builder_get_object(builder, "button_planning_next") );
 }
 
-// ----------------------
 
-void chooseTimeSlot(GtkWidget *widget, gpointer data){
-  Calendar *calendar = data;
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : chooseTimeSlot
+-------------------------
+Called when the user choose a time slot in Calendar.
+Update the daySelected in Calendar.
+call the functions updateTimeSlotComboPlanning and updateTimeSlotLabels
+-------------------------
+GtkWidget *widget: widget activated, here one of the calendar button
+Calendar *calendar : address of the struct Calendar
+*/
+void chooseTimeSlot(GtkWidget *widget, Calendar *calendar){
   GtkButton *button = GTK_BUTTON( widget );
   int *selected;
   int timeSlot, day;
@@ -733,8 +1114,17 @@ void chooseTimeSlot(GtkWidget *widget, gpointer data){
   selected = NULL;
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : updateTimeSlotComboPlanning
+-------------------------
+Called when a time slot is selected, check if the rest of the day is available, if yes
+the user can choose in the booking ComboBox between the morning, the afternoon or the all day. Else only the time time slot
+selected is proposed in the ComboBox
+-------------------------
+ Calendar *c : address of the struct Calendar
+*/
 void updateTimeSlotComboPlanning(Calendar *calendar){
   char timeSlots[3][16] = {"Matin", "Après-midi", "Journée"};
   char id[3][4] = {"0", "1", "2"};
@@ -759,8 +1149,18 @@ void updateTimeSlotComboPlanning(Calendar *calendar){
 
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : onTimeSlotPlanningChanged
+-------------------------
+Called when the user select a time slot in the ComboBox. Update the button color of the time slot selected at this day.
+If the time selected is all the day, the color of two buttons of the day is changed;
+update the field timeSlotSelected in the Calendar struct.
+-------------------------
+GtkWidget *widget: widget activated to open the window, here the calendar button
+Calendar *c : address of the struct Calendar
+*/
 void onTimeSlotPlanningChanged(GtkWidget *widget, gpointer data){
   Calendar *c = data;
   GtkComboBox *combo = GTK_COMBO_BOX(widget);
@@ -781,17 +1181,31 @@ void onTimeSlotPlanningChanged(GtkWidget *widget, gpointer data){
 
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : background_color_if_sensitive
+-------------------------
+if the widget is clickable then call the function background_color to the color of the widget.
+-------------------------
+GtkWidget *widget: widget to change.
+char *color: string of the code color in hexadecimal like "#RRGGBB"
+*/
 void background_color_if_sensitive(GtkWidget *widget, char* color){
   if( (int)gtk_widget_is_sensitive (widget) )
     background_color( widget, color );
 }
 
-// ----------------------
-// DRINKS 2
-
-void open_drink_window_2(GtkWidget *Widget,gpointer data){
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : open_drink_window_2
+-------------------------
+Open the window of the choice of having a drink or not, after planning window.
+-------------------------
+GtkWidget *widget: widget activated to open the window, here the button_planning_next button in planning window
+Session *session : address of the struct Session
+*/
+void open_drink_window_2(GtkWidget *Widget, gpointer data){
   Session *session = data;
   Calendar *c = session->calendar;
   GtkButton *backButton;
@@ -804,8 +1218,16 @@ void open_drink_window_2(GtkWidget *Widget,gpointer data){
   click_button(session, "button_drink_next", getPlanningDrinksCheckbox);
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getPlanningDrinksCheckbox
+-------------------------
+Get the selected drinks after the planning window, and put them in the struct Calendar. Then open the reservations window.
+-------------------------
+GtkWidget *widget: widget activated to open the window, here the next button in drinks window 2
+Session *s : address of the session
+*/
 void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data){
   Session *s = data;
   Calendar *calendar = s->calendar;
@@ -821,7 +1243,6 @@ void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data){
   for(int i = 0; i < 2; i++)
     s->calendar->drinks[i] = drinks[i];
 
-  //
   booking = prepareBookingPlanning(*calendar);
   reserveRoomByPlanning(booking);
 
@@ -829,8 +1250,18 @@ void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data){
   open_reservations_window(NULL, s);
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : prepareBookingPlanning
+-------------------------
+Create a Booking with all the informations to insert in DB
+-------------------------
+Calendar c: calendar
+-------------------------
+Return value
+  Booking *booking : address of the Booking created
+*/
 Booking *prepareBookingPlanning(Calendar c){
   Booking *booking;
   int priceHalfDay;
@@ -841,7 +1272,7 @@ Booking *prepareBookingPlanning(Calendar c){
   if( booking == NULL ) exit(1);
 
   booking->idRoom = c.id_room;
-  booking->nb_persons = 1;        // get the nb of persons ???
+  booking->nb_persons = 1;
   booking->time_slot = c.timeSlotSelected;
   booking->date = c.daySelected;
   for(int i = 0; i < 2; i++) booking->drinks[i] = c.drinks[i];
@@ -857,6 +1288,15 @@ Booking *prepareBookingPlanning(Calendar c){
   return booking;
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getPriceRoom
+-------------------------
+The function retrieve the price half day of a room from database.
+-------------------------
+int idRoom: the id of the room selected.
+*/
 unsigned int getPriceRoom(int idRoom){
   MYSQL *conn = connect_db();
   MYSQL_RES *result;
@@ -874,7 +1314,15 @@ unsigned int getPriceRoom(int idRoom){
 
   return price;
 }
-
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : reserveRoomByPlanning
+-------------------------
+When the user click on "reserver" , the function reserveRoomPlanning insert the new reservation of
+the user in the table BOOKING of database.
+-------------------------
+Booking *b : address of the struct Booking
+*/
 void reserveRoomByPlanning(Booking *b){
   Session *session = b->session;
   MYSQL *conn = connect_db();
@@ -892,25 +1340,15 @@ void reserveRoomByPlanning(Booking *b){
   b = NULL;
 }
 
-
-// ----------------------
-
-void printSearchParameter(Search *search){
-  int eq[4];
-  int dr[2];
-  int i;
-
-  for(i = 0; i < 4; i++) eq[i] = search->equipments[i];
-  for(i = 0; i < 2; i++) dr[i] = search->drinks[i];
-
-  printf("\nLieu: %d\nNb personnes: %d\nCreneau: %d\nDate: %d-%d-%d\n",search->id_place,search->nb_persons, search->time_slot, search->date.year, search->date.month, search->date.day  );
-  printf("Ecran: %d\nWhiteBoard: %d\nCamera: %d\nProjecteur: %d\n",eq[0],eq[1],eq[2],eq[3] );
-  printf("Caffe: %d\nThe: %d\n",dr[0],dr[1]);
-}
-
-// ----------------------
-
 // STYLE
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : stylePlanningRoom
+-------------------------
+Change the style of the planning window.
+-------------------------
+Session *session : address of the struct Session
+*/
 void stylePlanningRoom(Session *session){
   GtkWidget *planningContainer;
   GtkWidget *locationContainer;
@@ -921,6 +1359,7 @@ void stylePlanningRoom(Session *session){
   background_color(planningContainer, "#ffffff" );
   background_color(locationContainer, "#ffffff" );
 }
+
 
 // ----------------------
 

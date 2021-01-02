@@ -56,15 +56,4 @@ void print_result(MYSQL_RES *result){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 /**/

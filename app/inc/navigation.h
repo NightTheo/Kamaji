@@ -118,26 +118,25 @@ void background_color( GtkWidget *widget, char *color );
 
 //NAVIGATION
 void open_home_window(GtkWidget *widget, gpointer data);
-void open_reservations_window(GtkWidget *widget,gpointer data);
+void open_reservations_window(GtkWidget *widget, gpointer data);
 void open_new_res_window(GtkWidget *widget, gpointer data);
-void open_place_room_window(GtkWidget *widget,gpointer data);
-void open_equipment_window(GtkWidget *widget,gpointer data);
-void open_drink_window(GtkWidget *widget,gpointer data);
+void open_place_room_window(GtkWidget *widget, gpointer data);
+void open_equipment_window(GtkWidget *widget, gpointer data);
+void open_drink_window(GtkWidget *widget, gpointer data);
 void open_planning_window(GtkWidget *widget,gpointer data);
-void open_rooms_available_window(GtkWidget *widget,gpointer data);
+void open_rooms_available_window(GtkWidget *widget, gpointer data);
 void open_drink_window_2(GtkWidget *Widget,gpointer data);
 void open_reservations_window2(GtkWidget *widget,gpointer data);
 void editReservation(GtkWidget *widget,gpointer data);
-void deleteReservation(GtkWidget *widget,gpointer data);
 
 
 // BACK
 void back(GtkWidget *widget, gpointer data);
 
 // GET DATA
-void getSearchArguments(GtkWidget *widget,gpointer data);
-void getEquipmentsCheckbox(GtkWidget *widget,gpointer data);
-void getSearchDrinksCheckbox(GtkWidget *widget,gpointer data);
+void getSearchArguments(GtkWidget *widget, Session *session);
+void getEquipmentsCheckbox(GtkWidget *widget, Session *session);
+void getSearchDrinksCheckbox(GtkWidget *widget, Session *session);
 MysqlSelect findAvailableRooms(Search *search);
 int *getRoomsEquipment(char *idRoom);
 int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom);
@@ -145,7 +144,7 @@ int isRestDayAvailable( Date date, int time_slot_int, char *idRoom );
 Booking *prepareBooking( Search *search, RoomGtkBox room, char *idRoom );
 Booking *prepareBookingPlanning(Calendar c);
 int getPriceDrinks(int drinks[2], int idPlace);
-void getIdRoom(GtkWidget *widget, gpointer data);
+void getIdRoom(GtkWidget *widget, Session *session);
 void getCalendarWidgets(Calendar *c, GtkBuilder *builder);
 int *moveInCalendar(int year, int month, int day, int move);
 void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data);
@@ -153,6 +152,8 @@ unsigned int getPriceRoom(int idRoom);
 MysqlSelect findReservationsInDB();
 uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom);
 int *getReservationDrinks(char *idBooking);
+char *getPathMapPlace(uint32_t id_place);
+uint8_t fileExists(char *path);
 
 // SET DATA
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
@@ -165,7 +166,7 @@ void displayRoomEquipments(GtkImage *equipments[4], char *idRoom);
 void displayReservationDrinks(GtkImage *drinks[2], char *idBooking);
 void displayTimeSlotComboBox(RoomGtkBox room, char *idRoom, Search *search);
 void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slot);
-void reserveRoomBySearch(GtkWidget *widget, gpointer data);
+void reserveRoomBySearch(GtkWidget *widget, Booking *b);
 void insertDrinks(int drinks[2], MYSQL *conn);
 void planningNumbers(Calendar *calendar, struct tm *date);
 void click_button_planning(Session *session, char *idButton);
@@ -175,19 +176,22 @@ void updateWeekLabel( int *startDate, GtkLabel *week);
 void setRoomInfo(Calendar *calendar);
 void updateButtonsPlanning( Calendar *calendar, struct tm *td);
 void showOrHidePlanningButton(int isAvailable, GtkWidget *button);
-void chooseTimeSlot(GtkWidget *widget, gpointer data);
+void chooseTimeSlot(GtkWidget *widget, Calendar *calendar);
 void updateTimeSlotLabels(Calendar *c);
 void reserveRoomByPlanning(Booking *b);
 void updateTimeSlotComboPlanning(Calendar *calendar);
 void onTimeSlotPlanningChanged(GtkWidget *widget, gpointer data);
 void setDateReservation(char *dateSQL, GtkLabel *label);
-void abordDeleteReservation(GtkWidget *widget, gpointer data);
+void deleteReservation(GtkWidget *widget, delReservation *delReservation);
+void abordDeleteReservation(GtkWidget *widget, GtkWidget *window);
 void confirmDeleteReservation(GtkWidget *widget, gpointer data);
 uint8_t checkDataInputPlace(GtkComboBox *place);
 void focusDateCalendar(GtkCalendar *calendar);
 uint8_t checkDataCalendar(GtkCalendar *calendar);
 void checkDataNewRes(GtkWidget *widget, gpointer data);
 void checkDataPlaceRoom(GtkWidget *widget, gpointer data);
+void displayMapPlace(GtkBuilder *builder, uint32_t id_place);
+
 
 // PRINT
 void printSearchParameter(Search *seach);
