@@ -9,6 +9,16 @@ Call the data in the database and inject them in the windows.
 
 
 // INIT SESSION
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : initSession
+-------------------------
+Allocates memory for the main variables used : session, search and calendar.
+Init the linked list of the reservations.
+-------------------------
+Return value
+  Session *session: the session created
+*/
 Session *initSession(){
   Session *session;
   Search *search;
@@ -29,6 +39,17 @@ Session *initSession(){
   return session;
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : kamajiQuit
+-------------------------
+Free memory allocated for main variables search, calendar and session.
+Then quit the gtk loop.
+-------------------------
+GtkWidget *w : widget activated.
+Session *session : address of the struct Session
+*/
 void kamajiQuit(GtkWidget *w, gpointer data){
   Session *session = data;
   /*printf("Delete-event\n");
@@ -37,10 +58,19 @@ void kamajiQuit(GtkWidget *w, gpointer data){
   if( session->search != NULL ) free(session->search);
   if( session->calendar != NULL ) free(session->calendar);
   freeDelReservations(&session->nextReservation);
+  free(session);
   gtk_main_quit();
 }
 
-// BACK
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : back
+-------------------------
+Back to the previous window.
+-------------------------
+GtkWidget *widget : widget activated.
+Session *session : address of the struct Session
+*/
 void back(GtkWidget *widget, gpointer data){
   Session *session = data;
   gtk_widget_destroy( GTK_WIDGET( session->window ) );
@@ -48,8 +78,14 @@ void back(GtkWidget *widget, gpointer data){
 }
 
 
-// ------------------------------------------------
-
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : freeDelReservations
+-------------------------
+Free all the nodes of the linked list of Reservation
+-------------------------
+delReservation **start : address of the pointer of the last node added.
+*/
 void freeDelReservations(delReservation **start){
   while(*start != NULL){
     delReservation *remove = *start;
@@ -60,6 +96,16 @@ void freeDelReservations(delReservation **start){
 
 // ------------------------------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : comboBoxTextFill
+-------------------------
+Write the first row text and fill the combo box with the result of the select in DB.
+-------------------------
+GtkComboBoxText *comboBoxText: The comboBox fill.
+char *firstRow: Text of the first row
+char *request: SQL request
+*/
 void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *firstRow, char *request ){
 
   MYSQL_ROW row;
@@ -86,11 +132,15 @@ void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *firstRow, char *requ
 
 }
 
-// ------------------------
 
 /*
-* place - comboBoxText of the places
-* room - comboBoxText of the rooms
+-----------------------------------------------------------------------------------------------------------
+Function : fillComboBoxRooms
+-------------------------
+Fill the comboBoxText of the rooms in place room window
+-------------------------
+GtkComboBoxText *place : comboBoxText of the places in place room window
+gpointer room : comboBoxText of the rooms in place room window
 */
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room){
   char *id;
@@ -102,9 +152,15 @@ void fillComboBoxRooms(GtkComboBoxText *place,gpointer room){
 
 }
 
-// ------------------------
 
-
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : newRoomAvailable
+-------------------------
+Create a RoomGtkBox, a struct which contains all the widgets of a room in the list of available rooms.
+-------------------------
+MYSQL_ROW row: array of strings with the data of the current room from the select in DB.
+*/
 RoomGtkBox newRoomAvailable(MYSQL_ROW row){
   char equipments[4][16] = {"monitor", "camera", "whiteboard", "projector"};
   char id[32];
@@ -140,8 +196,14 @@ RoomGtkBox newRoomAvailable(MYSQL_ROW row){
   return room;
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : newReservation
+-------------------------
+Create a ReservationBox which contains all the widgets of a Reservation in the list of available Reservations.
+-------------------------
+*/
 ReservationBox newReservation(){
   char equipments[4][16] = {"monitor","camera","whiteboard","projector"};
   char id[32];
@@ -165,6 +227,16 @@ ReservationBox newReservation(){
   return reservation;
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayReservationData
+-------------------------
+Change the value of the widgets of a reservation, in the reservations list in reservation window.
+-------------------------
+ReservationBox reservation : struct with all the widgets of a reservation (labels, images, etc)
+MYSQL_ROW row : array of strings filled with the data of the curent booking selected in DB.
+*/
 void displayReservationData(ReservationBox reservation, MYSQL_ROW row){
   char location[64];
   char price[8];
@@ -179,6 +251,17 @@ void displayReservationData(ReservationBox reservation, MYSQL_ROW row){
   displayReservationDrinks( reservation.drinks, row[0] );
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayReservationDrinks
+-------------------------
+Display the drinks taken for a reservation. Get the drinks of a reservation by calling
+the function getReservationDrinks, then show or hide the corresponding image.
+-------------------------
+GtkImage *drinks[2]: array of GtkImages* who represente the drinks.
+char *idBooking: identifiant of booking.
+*/
 void displayReservationDrinks(GtkImage *drinks[2], char *idBooking){
 
   int *drinksArray = getReservationDrinks(idBooking);
@@ -192,6 +275,18 @@ void displayReservationDrinks(GtkImage *drinks[2], char *idBooking){
   free(drinksArray);
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getReservationDrinks
+-------------------------
+Select in DB the drinks included in a reservation, then fill an int array : 1 if the drink is present, 0 if not.
+-------------------------
+char *idBooking : id of the table BOOKING
+-------------------------
+Return value
+  int *drinks : address of the array created
+*/
 int *getReservationDrinks(char *idBooking){
   MYSQL *conn = connect_db();
   MYSQL_ROW row;
@@ -217,7 +312,16 @@ int *getReservationDrinks(char *idBooking){
 }
 
 // ------------------------
-
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : confirmDeleteReservation
+-------------------------
+Set the state of reservation in database to 0 for hide the reservation during the display.
+Refresh the window for update.
+-------------------------
+GtkWidget *widget: widget activated.
+delReservation *delReservation: address of the struct delReservation.
+*/
 void confirmDeleteReservation(GtkWidget *widget, gpointer data){
   delReservation *delReservation = data;
   MYSQL *conn = connect_db();
@@ -235,8 +339,17 @@ void confirmDeleteReservation(GtkWidget *widget, gpointer data){
   mysql_close(conn);
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayRoomEquipments
+-------------------------
+Display the equipments in a room. Get the equipments in the room by calling
+the function getRoomsEquipment, then show or hide the corresponding image.
+-------------------------
+GtkImage *equipments[4]: array of GtkImages* who represente the equipments.
+char *idRoom: identifiant of room.
+*/
 void displayRoomEquipments(GtkImage *equipments[4], char *idRoom){
 
   int *equipmentsArray = getRoomsEquipment(idRoom);
@@ -250,8 +363,18 @@ void displayRoomEquipments(GtkImage *equipments[4], char *idRoom){
   free(equipmentsArray);
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getRoomsEquipment
+-------------------------
+Select in DB the equipments a room has, then fill an int array : 1 if the equipment is present, 0 if not.
+-------------------------
+char *idRoom : id of the table ROOM
+-------------------------
+Return value
+  int *equipments : address of the array created.
+*/
 int *getRoomsEquipment(char *idRoom){
   // equipment
   MYSQL *conn = connect_db();
@@ -279,8 +402,18 @@ int *getRoomsEquipment(char *idRoom){
   return equipments;
 }
 
-// ----------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayTimeSlotComboBox
+-------------------------
+Fill of room avaible can choose the time of your reservation (morning, afternoon or all day).
+It only offers the rooms available at such a time of day.
+-------------------------
+RoomGtkBox room: struct of the room with all the widgets.
+char *idRoom: identifiant of room.
+Search *search: address of the struct Search.
+*/
 void displayTimeSlotComboBox(RoomGtkBox room, char *idRoom, Search *search){
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
   char idTimeSlot[4];
@@ -296,8 +429,21 @@ void displayTimeSlotComboBox(RoomGtkBox room, char *idRoom, Search *search){
     }
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayTimeSlotLabel
+-------------------------
+Display the time slot of availability of a room, if it is all the day, the time slot displayed is "8h - 20h",
+else it is "8h - 14h or "14h - 20h".
+For that, call the function isRestDayAvailable then set the text in consequence
+-------------------------
+GtkLabel *label : time slot label
+char *idRoom : id of the table ROOM
+Date date : date searched
+int time_slot : time slot searched
+char *idRoom : id of the table ROOM
+*/
 void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slot){
   char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
   char idTimeSlot[4];
@@ -312,13 +458,23 @@ void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slo
   gtk_label_set_text( label, timeSlot );
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : planningNumbers
+-------------------------
+Get the current date, transform the week day [0 - 6] to the europeen format.
+Update the field planning in Calendar, which store the date of the monday of the week displayed on the planning.
+Then call the function updatePlanningNumbers and updateWeekLabel.
+-------------------------
+Calendar *calendar : address of the calend
+struct tm *date : date of today
+*/
 void planningNumbers(Calendar *calendar, struct tm *date){
   int *startDate;
   int weekDay;
 
-  weekDay = date->tm_wday > 0 ? date->tm_wday -1 : 6 ; // s|m|t|w|t|f|s --> m|t|w|t|f|s|s   / format angl -> euro
+  weekDay = date->tm_wday > 0 ? date->tm_wday -1 : 6 ; // s|m|t|w|t|f|s --> m|t|w|t|f|s|s   /   format angl -> euro
   if( weekDay < 5 ) // monday -> friday
     startDate = moveInCalendar(date->tm_year + 1900,date->tm_mon, date->tm_mday, - weekDay);
   else
@@ -335,8 +491,16 @@ void planningNumbers(Calendar *calendar, struct tm *date){
   startDate = NULL;
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : updatePlanningNumbers
+-------------------------
+Retrieve the numbers days of all week from the first Monday of the week.
+-------------------------
+int *startDate: array of three integers{year, month, day} corresponding  of the monday of the week selected.
+GtkLabel *days[5]: array of GtkLabel who content the numbers of days.
+*/
 void updatePlanningNumbers(int *startDate, GtkLabel *days[5]){
   char charNumber[4];
   int *intNumber;
@@ -351,10 +515,19 @@ void updatePlanningNumbers(int *startDate, GtkLabel *days[5]){
   }
 }
 
-// ------------------------
 /*
-month [ 0 - 11 ]
-day   [ 1 - 31 ]
+-----------------------------------------------------------------------------------------------------------
+Function : moveInCalendar
+-------------------------
+From a given date, return the date of N days after or before.
+-------------------------
+int year : year of the start date
+int month : [0 - 11]
+int day : [ 1 - 31 ]
+int move : -N to days passed, +N to days to come
+-------------------------
+Return value
+  int *date : date after calcul of N days before or after
 */
 int *moveInCalendar(int year, int month, int day, int move){
   int daysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -396,8 +569,16 @@ int *moveInCalendar(int year, int month, int day, int move){
 }
 
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : click_button_planning
+-------------------------
+When the user click on the button, the function call planningChangeWeek function.
+-------------------------
+Session *session: address of the struct Session.
+char *idButton: identifiant of the button
+*/
 void click_button_planning(Session *session, char *idButton){
   GtkWidget *button;
   button = GTK_WIDGET(gtk_builder_get_object(session->builder, idButton));
@@ -406,8 +587,20 @@ void click_button_planning(Session *session, char *idButton){
 
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : planningChangeWeek
+-------------------------
+Update the calendar when the user change the week.
+Call functions for update:
+  -updatePlanningNumbers
+  -updateWeekLabel
+  -updateButtonsPlanning
+-------------------------
+Session *session: address of the struct Session.
+GtkWidget *widget: widget activated.
+*/
 void planningChangeWeek(GtkWidget *widget, gpointer data){
   Session *session = data;
   Date planning;
@@ -439,8 +632,16 @@ void planningChangeWeek(GtkWidget *widget, gpointer data){
   startDate = NULL;
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : updateWeekLabel
+-------------------------
+Update the label text of the calendar.
+-------------------------
+int *startDate: array of three integers{year, month, day} corresponding  of the monday of the week selected.
+GtkLabel *week: The current week display on the calendar.
+*/
 void updateWeekLabel( int *startDate, GtkLabel *week){
   char months[12][5] = {"jan", "fev", "mar", "avr", "mai", "juin", "juil", "aou", "sep", "oct", "nov", "dec"};
   char weekLabel[32];
@@ -454,8 +655,18 @@ void updateWeekLabel( int *startDate, GtkLabel *week){
   endDate = NULL;
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: setRoomInfo
+-------------------------
+Retrive data (room name, place name, room price half day) from database.
+Edit label.
+Edit equipment.
+Function call when user open planning window.
+-------------------------
+Calendar *calendar: address of the struct calendar.
+*/
 void setRoomInfo(Calendar *calendar){
   MYSQL *conn = connect_db();
   MYSQL_ROW row;
@@ -482,8 +693,17 @@ void setRoomInfo(Calendar *calendar){
   mysql_close(conn);
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: updateButtonsPlanning
+-------------------------
+Update the buttons in the planning. check if a button is clickable or not by
+calling isTimeSlotAvailable and by checking the date.
+-------------------------
+Calendar *calendar: address of the struct calendar.
+struct tm *td : current day
+*/
 void updateButtonsPlanning( Calendar *calendar, struct tm *td){
   char timeSlots[2][12] = {"8h - 14h", "14h - 20h"};
   char date[16];
@@ -519,6 +739,16 @@ void updateButtonsPlanning( Calendar *calendar, struct tm *td){
   }
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: showOrHidePlanningButton
+-------------------------
+It allows to make visible or not the button according to the availability of the time slot.
+-------------------------
+int isAvailable: state of timeslot avaible or not. (1 or -1)
+GtkWidget *button: The button to change (hide or show).
+*/
 void showOrHidePlanningButton(int isAvailable, GtkWidget *button){
   if( isAvailable == 1 ){
     gtk_widget_set_opacity( button, 1 );
@@ -533,8 +763,15 @@ void showOrHidePlanningButton(int isAvailable, GtkWidget *button){
   }
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: updateTimeSlotLabels
+-------------------------
+Update the time slot which confirm which time slot is selected
+-------------------------
+Calendar *calendar: address of the struct calendar.
+*/
 void updateTimeSlotLabels(Calendar *c){
   char days[5][8] = {"Lun", "Mar", "Mer", "Jeu", "Ven"};
   char months[12][8] = {"janv", "fev", "mars", "avr", "mai", "juin",\
@@ -548,8 +785,16 @@ void updateTimeSlotLabels(Calendar *c){
 
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: setDateReservation
+-------------------------
+Set the new date.
+-------------------------
+char *dateSQL: date in format SQL yyyy-[1-12]-[1-31]
+GtkLabel *label: The current date display on the calendar.
+*/
 void setDateReservation(char *dateSQL, GtkLabel *label){
   char months[12][8] = {"janv", "fev", "mars", "avr", "mai", "juin",\
                         "juill", "aout", "sept", "oct", "nov", "dec"};
@@ -563,9 +808,14 @@ void setDateReservation(char *dateSQL, GtkLabel *label){
 }
 
 
-// ------------------------
-
-
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: focusDateCalendar
+-------------------------
+In new res window, set the selected date to tomorow
+-------------------------
+Calendar *calendar: address of the struct calendar.
+*/
 void focusDateCalendar(GtkCalendar *calendar){
   time_t now;
   struct tm *td;
@@ -581,8 +831,18 @@ void focusDateCalendar(GtkCalendar *calendar){
   tomorrow = NULL;
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: checkDataInputPlace
+-------------------------
+Check if a place is selected in the new res window.
+-------------------------
+GtkComboBox *place : combobox of the place selected
+-------------------------
+Return value
+  uint8_t : boolean if the place is ok
+*/
 uint8_t checkDataInputPlace(GtkComboBox *place){
     uint32_t id;
 
@@ -593,8 +853,18 @@ uint8_t checkDataInputPlace(GtkComboBox *place){
   return 0;
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: checkDataCalendar
+-------------------------
+Check if the date selected in the calendar of new res window is not passed.
+-------------------------
+GtkCalendar *calendar : calendar in new res window
+-------------------------
+Return value
+  uint8_t : boolean if the date is ok
+*/
 uint8_t checkDataCalendar(GtkCalendar *calendar){
   Date d;
   time_t now;
@@ -613,8 +883,14 @@ uint8_t checkDataCalendar(GtkCalendar *calendar){
 }
 
 
-// ------------------------
-
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: checkDataNewRes
+-------------------------
+Hide or show the date avaible for new reservation.
+-------------------------
+GtkWidget *widget: widget activated.
+*/
 void checkDataNewRes(GtkWidget *widget, gpointer data){
   GtkWidget **check = data;
   /*printf("place: %u\n",checkDataInputPlace( GTK_COMBO_BOX(check[1]) ) );
@@ -626,8 +902,15 @@ void checkDataNewRes(GtkWidget *widget, gpointer data){
     gtk_widget_set_sensitive( GTK_WIDGET(check[0]), FALSE );
 }
 
-// ------------------------
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: checkDataPlaceRoom
+-------------------------
+Set the button to validate in place room window on sensitive or not if aroom is selected.
+-------------------------
+GtkWidget *widget: widget activated.
+*/
 void checkDataPlaceRoom(GtkWidget *widget, gpointer data){
   GtkWidget *button = data;
   GtkComboBox *room = GTK_COMBO_BOX( widget );
