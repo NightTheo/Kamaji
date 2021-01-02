@@ -58,7 +58,6 @@ void kamajiQuit(GtkWidget *w, gpointer data){
   if( session->search != NULL ) free(session->search);
   if( session->calendar != NULL ) free(session->calendar);
   freeDelReservations(&session->nextReservation);
-  free(session);
   gtk_main_quit();
 }
 
