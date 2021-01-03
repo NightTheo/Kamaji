@@ -1,5 +1,7 @@
 /*
 navigation.h
+-------------------------
+headers of the src/navigation.c file
 */
 
 Session *initSession();

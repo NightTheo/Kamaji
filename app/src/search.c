@@ -378,25 +378,6 @@ char *getPathMapPlace(uint32_t id_place){
 }
 
 
-/*
------------------------------------------------------------------------------------------------------------
-Function : fileExists
--------------------------
-says if the given path is a file, at least an readable file
--------------------------
-char *path : path of the file
--------------------------
-Return values
-    uint8_t exists : boolean, 1 if the file exists, else 0
-*/
-uint8_t fileExists(char *path){
-  uint8_t exists;
-  FILE *fp = fopen( path, "r" );
-  exists = fp != NULL ? 1 : 0;
-  fclose(fp);
-  return exists;
-}
-
 
 /*
 -----------------------------------------------------------------------------------------------------------

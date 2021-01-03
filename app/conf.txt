@@ -1,0 +1,10 @@
+[database]
+dbname : kamajiv2
+login : root
+password :
+
+[style]
+backgroud-color : #444444
+font-family :
+font-size :
+border-radius :

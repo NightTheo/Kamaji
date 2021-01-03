@@ -13,7 +13,8 @@ CFILES = src/main.c \
 				 src/search.c \
 				 src/planning.c \
 				 src/reservations.c \
-				 src/style.c
+				 src/style.c \
+				 src/conf.c
 
 #Executable
 EXE = exe/$(APPNAME)

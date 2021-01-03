@@ -1,9 +1,8 @@
 /*
-import_glade.c
-
-create the windows from the file glade in ui/glade/home.glade
-connet the signals for the navigation between the windows
-
+navigation.c
+-------------------------
+Functions to navigate betweens the windows, the initiation of the app
+and the end of the app.
 */
 #include "kamaji.h"
 

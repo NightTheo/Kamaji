@@ -13,6 +13,7 @@ kamaji.h
 
 // DEFINE
 #define GLADE_FILE "ui/glade/home.glade"
+#define CONF_FILE "../conf.txt"
 
 
 // STRUCTS
@@ -190,6 +191,7 @@ typedef struct Session{
 #include "../inc/reservations.h"
 #include "../inc/search.h"
 #include "../inc/style.h"
+#include "../inc/conf.h"
 
 
 
