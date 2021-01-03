@@ -13,7 +13,7 @@ kamaji.h
 
 // DEFINE
 #define GLADE_FILE "ui/glade/home.glade"
-#define CONF_FILE "../conf.txt"
+#define CONF_FILE "conf.txt"
 
 
 // STRUCTS

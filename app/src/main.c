@@ -18,6 +18,9 @@ int main(int argc, char **argv){
   Session *session;
   time_t now;
 
+  char *conf = getConf("","");
+  free(conf); conf = NULL;
+
   gtk_init(&argc, &argv);
 
   session = initSession();
