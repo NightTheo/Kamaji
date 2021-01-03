@@ -12,7 +12,8 @@ CFILES = src/main.c \
 				 src/config_mysql.c \
 				 src/search.c \
 				 src/planning.c \
-				 src/reservations.c
+				 src/reservations.c \
+				 src/style.c
 
 #Executable
 EXE = exe/$(APPNAME)

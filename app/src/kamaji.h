@@ -189,6 +189,7 @@ typedef struct Session{
 #include "../inc/planning.h"
 #include "../inc/reservations.h"
 #include "../inc/search.h"
+#include "../inc/style.h"
 
 
 
