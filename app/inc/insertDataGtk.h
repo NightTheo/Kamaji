@@ -17,11 +17,9 @@ void freeDelReservations(delReservation **start);
 
 void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *firstRow, char *request );
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
-ReservationBox newReservation();
-void displayReservationData(ReservationBox reservation,MYSQL_ROW row);
-void displayReservationDrinks(GtkImage *drinks[2], char *idBooking);
-int *getReservationDrinks(char *idBooking);
-void confirmDeleteReservation(GtkWidget *widget, gpointer data);
+
+
+
 
 void planningNumbers(Calendar *calendar, struct tm *date);
 void updatePlanningNumbers(int *startDate, GtkLabel *days[5]);
