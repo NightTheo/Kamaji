@@ -5,16 +5,10 @@ create the windows from the file glade in ui/glade/home.glade
 connet the signals for the navigation between the windows
 
 */
-
-#include <stdint.h>
-#include <time.h>
-#include <gtk/gtk.h>
-#include "../inc/navigation.h"
-#include "../inc/insertDataGtk.h"
-
+#include "kamaji.h"
 
 //defines
-#define GLADE_FILE "ui/glade/home.glade"
+
 
 
 /*
@@ -255,205 +249,6 @@ MysqlSelect findReservationsInDB(){
   return select;
 }
 
-
-
-// ----------------------
-// NEW RESERVATIONS
-/*
------------------------------------------------------------------------------------------------------------
-Function : open_new_res_window
--------------------------
-Open the servation window wich get the arguments of the search
--------------------------
-GtkWidget *widget : widget activated to open the window
-delReservation *delReservation: pointer of struct which contains the id of the reservation to delete & the Session
-*/
-void open_new_res_window(GtkWidget *widget, gpointer data){
-  Session *session = data;
-  GtkComboBox *inputplace;
-  GtkButton *backButton, *nextButton;
-  GtkCalendar *calendar;
-  GtkWidget **check;
-
-  close_and_open_window(session, "window_new_reservation");
-
-  session->backFunction = open_home_window;
-  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_new_res") );
-  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
-
-  nextButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_new_res") );
-  gtk_widget_set_sensitive(GTK_WIDGET(nextButton), FALSE);
-
-  inputplace = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_where"));
-  comboBoxTextFill( GTK_COMBO_BOX_TEXT(inputplace) ,"Choisir un lieu", "SELECT id, name FROM PLACE WHERE state = 1" );
-
-  calendar = GTK_CALENDAR(gtk_builder_get_object(session->builder, "calendar_new_res") );
-  focusDateCalendar(calendar);
-
-  //check data
-  if( (check = malloc( sizeof(GtkWidget*) * 3 )) == NULL) exit(1);
-  check[0] = GTK_WIDGET(nextButton);
-  check[1] = GTK_WIDGET(inputplace);
-  check[2] = GTK_WIDGET(calendar);
-  g_signal_connect(inputplace, "changed", G_CALLBACK(checkDataNewRes), check);
-  g_signal_connect(calendar, "day-selected", G_CALLBACK(checkDataNewRes), check);
-  g_signal_connect( nextButton, "clicked", G_CALLBACK(freeCheckDataSearch), check );
-
-  click_button(session, "button_new_res", getSearchArguments);
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : freeCheckDataSearch
--------------------------
-Free the array check.
-check is an array of GtkWidget*. It contains the validation button, the ComboBox of places and the Calendar.
--------------------------
-GtkWidget *widget : widget activated to open the window,
-gpointer data: (void*) the check array of widgets *
-*/
-void freeCheckDataSearch(GtkWidget *widget, gpointer data){
-  GtkWidget **check = data;
-  free(check);
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : getSearchArguments
--------------------------
-Get the widgets used to specify the search, then get the data inside.
-And open the the equipments window.
--------------------------
-GtkWidget *widget : widget activated to open the window,
-Session *session : address of the struct Session
-*/
-void getSearchArguments(GtkWidget *widget, Session *session){
-  Search *search = session->search;
-  GtkComboBox *inputplace;
-  GtkComboBox *inputTime;
-  GtkSpinButton *inputNbPeoples;
-  GtkCalendar *inputDate;
-
-  inputplace = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_where"));
-  inputNbPeoples = GTK_SPIN_BUTTON(gtk_builder_get_object(session->builder, "spin_new_reservation_group"));
-  inputTime = GTK_COMBO_BOX(gtk_builder_get_object(session->builder, "combo_new_reservation_when"));
-  inputDate = GTK_CALENDAR(gtk_builder_get_object(session->builder, "calendar_new_res"));
-
-  search->id_place = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputplace) ) );
-  search->nb_persons = gtk_spin_button_get_value_as_int(inputNbPeoples) ;
-  search->time_slot = atoi( gtk_combo_box_get_active_id( GTK_COMBO_BOX(inputTime) ) );
-  gtk_calendar_get_date(inputDate, (guint*)&search->date.year, (guint*)&search->date.month, (guint*)&search->date.day);
-  search->date.month++;
-
-  open_equipment_window(NULL, session);
-}
-
-
-//##############################################################################
-// ----------------------
-// EQUIPMENTS
-/*
------------------------------------------------------------------------------------------------------------
-Function : open_equipment_window
--------------------------
-Open the window where the user chooses the desired equipments.
--------------------------
-GtkWidget *widget : widget activated to open the window
-Session *session : address of the struct Session
-*/
-void open_equipment_window(GtkWidget *widget, gpointer data){
-  Session *session = data;
-  GtkButton *backButton;
-
-  session->backFunction = open_new_res_window;
-  close_and_open_window(session, "window_equipment");
-  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_equiments") );
-  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
-
-  click_button(session, "button_equipment_search", getEquipmentsCheckbox);
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : getEquipmentsCheckbox
--------------------------
-Get the value of the equipment's checkboxes, put them in an array of 0 and 1 and open the drinks window
--------------------------
-GtkWidget *widget : widget activated to open the window
-Session *session : address of the struct Session
-*/
-void getEquipmentsCheckbox(GtkWidget *widget, Session *session){
-  int equipments[4] = {0};
-
-  GtkCheckButton *checkMonitor = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_monitor"));
-  GtkCheckButton *checkWhiteboard = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_whiteboard"));
-  GtkCheckButton *checkCamera = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_camera"));
-  GtkCheckButton *checkProjector = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_equipment_projector"));
-
-  equipments[0] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkMonitor) );
-  equipments[1] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkWhiteboard) );
-  equipments[2] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkCamera) );
-  equipments[3] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkProjector) );
-
-  for(int i = 0; i < 4; i++)
-    session->search->equipments[i] = equipments[i];
-
-  open_drink_window(NULL, session);
-}
-
-
-
-// ----------------------
-// DRINK
-/*
------------------------------------------------------------------------------------------------------------
-Function : open_drink_window
--------------------------
-Open the window where the user chooses the desired drinks.
--------------------------
-GtkWidget *widget : widget activated to open the window
-Session *session : address of the struct Session
-*/
-void open_drink_window(GtkWidget *widget, gpointer data){
-  Session *session = data;
-  GtkButton *backButton;
-
-  session->backFunction = open_equipment_window;
-  close_and_open_window(session, "window_drink");
-  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_drink") );
-  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
-
-  click_button(session, "button_drink_next", getSearchDrinksCheckbox);
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : getSearchDrinksCheckbox
--------------------------
-Get the value of the drinks's checkboxes, put them in the array of 0 and 1 Search.drinks and open the rooms available window
--------------------------
-GtkWidget *widget : widget activated to open the window
-Session *session : address of the struct Session
-*/
-void getSearchDrinksCheckbox(GtkWidget *widget, Session *session){
-  Search *search = session->search;
-  int drinks[2] = {0};
-
-  GtkCheckButton *checkCoffee = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_drink_coffee"));
-  GtkCheckButton *checkTea = GTK_CHECK_BUTTON(gtk_builder_get_object(session->builder, "check_drink_tea"));
-
-  drinks[0] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkCoffee) );
-  drinks[1] = (int)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( checkTea) );
-
-  for(int i = 0; i < 2; i++)
-    session->search->drinks[i] = drinks[i];
-
-  open_rooms_available_window(NULL ,session);
-}
 
 
 //##############################################################################
@@ -938,6 +733,7 @@ int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
 }
 
 
+// PLACE ROOM
 /*
 -----------------------------------------------------------------------------------------------------------
 Function : open_place_room_window

@@ -4,8 +4,7 @@ insertDataGtk.c
 Call the data in the database and inject them in the windows.
 
 */
-
-
+#include "kamaji.h"
 
 
 // INIT SESSION

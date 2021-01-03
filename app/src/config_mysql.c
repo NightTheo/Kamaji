@@ -6,7 +6,7 @@ Yanis TAGRI
 _________________
 
 */
-
+#include "kamaji.h"
 
 /*__________________________________*/
 //connect_to_DB
