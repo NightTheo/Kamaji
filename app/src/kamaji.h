@@ -1,3 +1,9 @@
+/*
+kamaji.h
+-------------------------
+
+*/
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
@@ -5,19 +11,11 @@
 #include <mysql/mysql.h>
 #include <gtk/gtk.h>
 
-//Struct
+// DEFINE
+#define GLADE_FILE "ui/glade/home.glade"
 
-/*
-Struct : Date
--------------------------
-Store the year, the month and the day
-*/
-typedef struct Date{
-  int year;
-  int month;
-  int day;
-} Date;
 
+// STRUCTS
 
 /*
 Struct : RoomGtkBox
@@ -36,6 +34,18 @@ typedef struct RoomGtkBox{
   GtkComboBoxText *bookingTimeSlotComboBox;
   GtkButton *bookingButton;
 } RoomGtkBox;
+
+
+/*
+Struct : Date
+-------------------------
+Store the year, the month and the day
+*/
+typedef struct Date{
+  int year;
+  int month;
+  int day;
+} Date;
 
 
 /*
@@ -178,10 +188,9 @@ typedef struct Session{
 #include "../inc/navigation.h"
 #include "../inc/insertDataGtk.h"
 #include "../inc/search.h"
+#include "../inc/reservations.h"
 
 
-// DEFINE
-#define GLADE_FILE "ui/glade/home.glade"
 
 
 

@@ -35,9 +35,9 @@ void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slo
 uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom);
 Booking *prepareBooking( Search *search, RoomGtkBox room, char *idRoom );
 int getPriceDrinks(int drinks[2], int idPlace);
-void reserveRoomBySearch(GtkWidget *widget, Booking *b);
 void insertDrinks(int drinks[2], MYSQL *conn);
 void freeBookings(Booking **start);
 MysqlSelect findAvailableRooms(Search *search);
 int isRestDayAvailable( Date date, int time_slot_int, char *idRoom );
 int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom);
+void reserveRoomBySearch(GtkWidget *widget, Booking *b);
