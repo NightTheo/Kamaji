@@ -1,10 +1,7 @@
 /*
-  config_mysql.h
-_________________
-Théo OMNES
-Yanis TAGRI
-_________________
-
+config_mysql.h
+-------------------------
+headers of the src/config_mysql.c file
 */
 
 MYSQL *connect_db();

@@ -1,7 +1,7 @@
 /*
 search.h
 -------------------------
-headers of the search.c file
+headers of the src/search.c file
 */
 
 // New reservation
@@ -20,6 +20,7 @@ void getSearchDrinksCheckbox(GtkWidget *widget, Session *session);
 // Available rooms
 void open_rooms_available_window(GtkWidget *widget, gpointer data);
 void displayMapPlace(GtkBuilder *builder, uint32_t id_place);
+RoomGtkBox newRoomAvailable( MYSQL_ROW row);
 char *getPathMapPlace(uint32_t id_place);
 uint8_t fileExists(char *path);
 void displayDataRoom(RoomGtkBox room, MYSQL_ROW row, Session *session);

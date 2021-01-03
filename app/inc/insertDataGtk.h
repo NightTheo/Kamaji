@@ -1,6 +1,9 @@
 /*
-insertDataGtk.h
+config_mysql.h
+-------------------------
+headers of the src/config_mysql.c file
 */
+
 Session *initSession();
 void kamajiQuit(GtkWidget *w, gpointer data);
 
@@ -14,7 +17,6 @@ void freeDelReservations(delReservation **start);
 
 void comboBoxTextFill( GtkComboBoxText *comboBoxText, char *firstRow, char *request );
 void fillComboBoxRooms(GtkComboBoxText *place,gpointer room);
-RoomGtkBox newRoomAvailable( MYSQL_ROW row);
 ReservationBox newReservation();
 void displayReservationData(ReservationBox reservation,MYSQL_ROW row);
 void displayReservationDrinks(GtkImage *drinks[2], char *idBooking);

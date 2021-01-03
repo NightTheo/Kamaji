@@ -96,28 +96,6 @@ void newWindow(char* file, char* idWindow, Session *session){
 }
 
 
-/*
------------------------------------------------------------------------------------------------------------
-Function : background_color
--------------------------
-Change the back ground color of a widget
--------------------------
-GtkWidget *widget : the widget to change
-char *color : color in hexadecimal like #RRGGBB
-*/
-void background_color( GtkWidget *widget, char *color ){
-  GtkCssProvider * cssProvider = gtk_css_provider_new();    //store the css
-
-  char css[64] = "* { background-image:none; background-color:";
-  strcat( strcat( css , color ), ";}" );
-
-  gtk_css_provider_load_from_data(cssProvider, css,-1,NULL);
-  GtkStyleContext * context = gtk_widget_get_style_context(widget);   //manage CSS provider
-  gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(cssProvider),GTK_STYLE_PROVIDER_PRIORITY_USER);
-}
-
-
-
 
 //##############################################################################
 // ----------------------
@@ -250,487 +228,6 @@ MysqlSelect findReservationsInDB(){
 }
 
 
-
-//##############################################################################
-// ----------------------
-// ROOMS AVAILABLES
-/*
------------------------------------------------------------------------------------------------------------
-Function : open_rooms_available_window
--------------------------
-Open the window with the list of all the rooms available with the desired conditions
--------------------------
-GtkWidget *widget : widget activated to open the window
-Session *session : address of the struct Session
-*/
-void open_rooms_available_window(GtkWidget *widget, gpointer data){
-  Session *session = data;
-  Search *search = session->search;
-  RoomGtkBox room;
-  GtkContainer *listContainer;
-  MYSQL_ROW row;
-  MysqlSelect select;
-  GtkButton *backButton;
-
-  session->backFunction = open_drink_window;
-  close_and_open_window(session,"window_rooms_available");
-  backButton = GTK_BUTTON( gtk_builder_get_object(session->builder, "button_back_from_rooms_available") );
-  g_signal_connect(backButton, "clicked", G_CALLBACK(back), session);
-  listContainer = GTK_CONTAINER( gtk_builder_get_object(session->builder, "box_available_list") );
-
-  GtkWidget *viewport_available_right = GTK_WIDGET(gtk_builder_get_object(session->builder,"viewport_available_right"));
-  background_color(viewport_available_right , "#FFFFFF");
-  displayMapPlace(session->builder, search->id_place);
-
-  select = findAvailableRooms(search);
-  while ((row = mysql_fetch_row(select.result)) != NULL){
-    if( !hasRequiredEquipments(search->equipments, row[0]) ) continue;
-
-    room = newRoomAvailable(row);
-    displayDataRoom(room, row, session);
-    gtk_container_add ( listContainer, GTK_WIDGET(room.box) );
-  }
-
-  mysql_free_result(select.result);
-  mysql_close(select.conn);
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : displayMapPlace
--------------------------
-Change the path of the image of the map
--------------------------
-GtkBuilder *builder : address of the builder which built the image
-*/
-void displayMapPlace(GtkBuilder *builder, uint32_t id_place){
-  char *path;
-  GtkImage *image;
-
-  path = getPathMapPlace(id_place);
-  image = GTK_IMAGE( gtk_builder_get_object(builder,"img_rooms_available_") );
-  gtk_image_set_from_file (image, path);
-
-  free(path);
-}
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : getPathMapPlace
--------------------------
-Get the path of the map image in the DB
--------------------------
-uint32_t id_place : id of the place wanted
--------------------------
-Return values
-    char *path : the path found, or the default image's path
-*/
-char *getPathMapPlace(uint32_t id_place){
-  MYSQL_ROW row;
-  MYSQL *conn = connect_db();
-  MYSQL_RES *result;
-  char request[64];
-  char *path;
-  uint8_t error = 0;
-
-  path = malloc( sizeof(char) * 64 );
-  if( path == NULL ) exit(1);
-
-  sprintf(request, "SELECT map FROM PLACE WHERE id = %d", id_place);
-  result = query(conn, request);
-  if((row = mysql_fetch_row(result)) != NULL){
-    if( strlen(*row) < 64)
-      strcpy( path, *row );
-    else error = 1;
-  }
-  else error = 1;
-
-  if( !fileExists(path) ) error = 1;
-
-  if(error) strcpy(path, "ui/img/maps/default.jpg");
-
-  mysql_free_result(result);
-  mysql_close(conn);
-
-  return path;
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : fileExists
--------------------------
-says if the given path is a file, at least an readable file
--------------------------
-char *path : path of the file
--------------------------
-Return values
-    uint8_t exists : boolean, 1 if the file exists, else 0
-*/
-uint8_t fileExists(char *path){
-  uint8_t exists;
-  FILE *fp = fopen( path, "r" );
-  exists = fp != NULL ? 1 : 0;
-  fclose(fp);
-  return exists;
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : displayDataRoom
--------------------------
-Set all the data selected in DB in the widgets.
-Add node in the linked list of booking
--------------------------
-RoomGtkBox room : struct of the room with all the widgets
-MYSQL_ROW row : array of strings of the current found room
-Session *session : address of the struct Session
-*/
-void displayDataRoom(RoomGtkBox room, MYSQL_ROW row, Session *session){
-  Search *search = session->search;
-  Booking *booking;
-
-  displayRoomEquipments(room.equipments, row[0]);
-  displayTimeSlotComboBox(room, row[0], search);
-  displayTimeSlotLabel(room.timeSlotLabel, row[0], search->date, search->time_slot );
-
-  booking = prepareBooking(search, room, row[0]);
-  booking->session = session;
-  search->startBooking = booking;
-
-  g_signal_connect (room.bookingButton,"clicked",G_CALLBACK(reserveRoomBySearch),booking);
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : hasRequiredEquipments
--------------------------
-Check if a room has the equipments required in the search
--------------------------
-int requiredEquipments[4] : array of the required equipement : 1 is required, 0 not
-char *idRoom : string of the id of the room in DB
--------------------------
-Return value
-    uint8_t state : boolean, 1 if the room possed all the desired equipment
-*/
-uint8_t hasRequiredEquipments(int requiredEquipments[4], char *idRoom){
-  uint8_t state = 1;
-  int *roomEquipments = getRoomsEquipment(idRoom);
-
-  for(int i = 0; i < 4; i++)
-    if( requiredEquipments[i] == 1 && roomEquipments[i] == 0)
-      state = 0;
-
-  free(roomEquipments);
-  roomEquipments = NULL;
-  return state;
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : prepareBooking
--------------------------
-Check if a room has the equipments required in the search
--------------------------
-Search *search : address of struct Search
-RoomGtkBox room :
-char *idRoom : id of the room
--------------------------
-Return value
-    Booking *booking : struct with all the data ready to insert in BOOKING table
-*/
-Booking *prepareBooking( Search *search, RoomGtkBox room, char *idRoom ){
-  Booking *booking;
-  GtkComboBox *timeSlotComboBox;
-  int priceHalfDay;
-  double price = 0;
-  int drinks[2];
-
-  booking = malloc( sizeof(Booking) );
-  if( booking == NULL ) exit(1);
-
-  strcpy(booking->test, "test");
-  booking->idRoom = atoi( idRoom );
-  booking->nb_persons = search->nb_persons;
-  booking->date = search->date;
-  for( int i = 0; i < 2; i++ )
-    booking->drinks[i] = search->drinks[i];
-
-  // get the time slot from the comboBoxText
-  timeSlotComboBox = GTK_COMBO_BOX( gtk_builder_get_object(room.builder, "combo_available_list_element_when") );
-  booking->time_slot = atoi( gtk_combo_box_get_active_id(timeSlotComboBox) );
-
-  for(int i = 0; i < 2; i++) drinks[i] = search->drinks[i];
-  price += getPriceDrinks(drinks, search->id_place);
-
-  priceHalfDay = atoi( gtk_label_get_text(room.priceHalfDay) );
-  price += search->time_slot == 2 ? priceHalfDay * 2 : priceHalfDay ;
-  booking->price = price;
-
-  booking->next = search->startBooking;
-
-  return booking;
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : getPriceDrinks
--------------------------
-Get the sum of the price of the desired drinks.
-If a drink is desired, get the price proposed by the place and sum it to the int price
--------------------------
-int drinks[2] : array of the desired drinks
-int idPlace : id of the place in DB
--------------------------
-Return value
-    int price : sum of the price of the desired drinks.
-*/
-int getPriceDrinks(int drinks[2], int idPlace){
-  int price = 0;
-  char request[512];
-  MYSQL *conn = connect_db();
-  MYSQL_ROW row;
-
-  for(int i = 0; i < 2; i++){
-    if( drinks[i] == 1 ){
-      MYSQL_RES *result;
-      sprintf(request, "SELECT ppd.price FROM ROOM as R\
-      INNER JOIN PLACE as P on R.place = P.id\
-      INNER JOIN _place_propose_drink as ppd on ppd.place = P.id\
-      WHERE ppd.place = %d AND ppd.drink = %d\
-      GROUP BY P.id", idPlace, drinks[i]);
-      result = query(conn, request);
-      if((row = mysql_fetch_row(result)) != NULL)
-        price += atoi(*row);
-
-      mysql_free_result(result);
-    }
-  }
-  mysql_close(conn);
-
-  return price;
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : reserveRoomBySearch
--------------------------
-insert the reservation in DB. Then open the reservations window.
--------------------------
-GtkWidget *widget: widget activated to open the window, here the booking button
-Booking *b : address of the struct Booking, which contains all the data of the room the user wants to book
-*/
-void reserveRoomBySearch(GtkWidget *widget, Booking *b){
-  Session *session = b->session;
-  MYSQL *conn = connect_db();
-  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
-  char request[512];
-
-  sprintf(request, "INSERT INTO BOOKING(nb_persons,price,date_booking,time_slot,state,room) \
-  VALUES(%d,%d,'%d-%d-%d','%s',1,%d) ;",\
-  b->nb_persons, (int)b->price, b->date.year, b->date.month, b->date.day, time_slots[b->time_slot], b->idRoom );
-
-
-  MYSQL_RES *result = query(conn, request);
-  insertDrinks(b->drinks, conn );
-
-  freeBookings(&session->search->startBooking);
-
-  mysql_close(conn);
-  mysql_free_result(result);
-
-  open_reservations_window(NULL, session);
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : insertDrinks
--------------------------
-Get the last id inserted in BOOKING then insert the drinks in DB (table _booking_include_drink).
--------------------------
-int drinks[2] : array of the desired drinks
-MYSQL *conn : connexion of the DB which inserted the booking
-*/
-void insertDrinks(int drinks[2], MYSQL *conn){
-  uint32_t idBooking;
-  char request[512];
-  MYSQL *connInsert = connect_db();
-  MYSQL_RES *resultId;
-  MYSQL_RES *resultInsert;
-  MYSQL_ROW row;
-  uint8_t i;
-
-  resultId = query(conn, "SELECT LAST_INSERT_ID()");
-  row = mysql_fetch_row(resultId);
-  if( row != NULL && atoi(*row) > 0){
-    idBooking = (uint32_t)atoi(*row);
-
-    for(i = 0; i < 2; i++){
-      if( drinks[i] ){
-        sprintf(request, "INSERT INTO _booking_include_drink VALUES(%d,%d)", idBooking, i+1);
-        resultInsert = query(connInsert, request);
-        mysql_free_result(resultInsert);
-      }
-
-    }
-
-  }else{
-    printf("Error insert drinks\n");
-    exit(1);
-  }
-
-  mysql_free_result(resultId);
-  mysql_close(connInsert);
-
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : freeBookings
--------------------------
-Free all the linked list of struct Booking.
--------------------------
-Booking **start : address of the pointer of the last node added.
-*/
-void freeBookings(Booking **start){
-  while(*start != NULL){
-    Booking *remove = *start;
-    *start = (*start)->next;
-    free(remove);
-  }
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : findAvailableRooms
--------------------------
-Get the available rooms in DB with the specifics conditions of the user.
--------------------------
-Search *s : address of the struct Search wich contains all the data the user entered for the search
--------------------------
-Return value
-    MysqlSelect select : struct storing the connexionand the result.
-                         The conn will be closed later, so the connexion has to be returned
-*/
-MysqlSelect findAvailableRooms(Search *s){
-  Date d = s->date;
-  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
-  char request[1024];
-  MysqlSelect select;
-
-  /*
-  select ROOM.id , ROOM.name, PLACE.name, ROOM.max_capacity and ROOM.price_half_day
-  for the rooms which are available at a date and at a time slot.
-  */
-  sprintf(request, "SELECT A.* FROM (\n\
-  	SELECT R.id, R.name as room_name, P.name as place_name, R.max_capacity, R.price_half_day\n\
-      FROM ROOM as R\n\
-      INNER JOIN PLACE as P ON R.place = P.id\n\
-      WHERE R.max_capacity >= %d\n\
-      AND R.place = %d\n\
-      AND R.state = 1\n\
-  ) as A\n\
-  LEFT JOIN (\n\
-      SELECT B.room FROM BOOKING AS B\n\
-      INNER JOIN ROOM as R ON B.room = R.id\n\
-      WHERE R.place = %d\n\
-      AND B.date_booking = '%d-%d-%d'\n\
-      AND ( B.time_slot = '8h - 20h' OR B.time_slot = '%s')\n\
-      AND B.state = 1\n\
-  ) as B\n\
-  ON A.id = B.room\n\
-  WHERE B.room IS NULL;\n"\
-  , s->nb_persons, s->id_place, s->id_place, d.year, d.month, d.day, time_slots[s->time_slot] );
-
-  //query the reservations
-  MYSQL *conn = connect_db();
-  MYSQL_RES *result = query(conn, request);
-
-  select.conn = conn;
-  select.result = result;
-  strcpy(select.request, request);
-
-  return select;
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : isRestDayAvailable
--------------------------
-Invert the time slot: "8h - 14h" becomes "14h - 20h", by a xor of the time slot searched.
-The call the function isTimeSlotAvailable with the inverted time slot.
--------------------------
- Date date : desired date in search
- int time_slot_int : desired time slot in search
- char *idRoom : string of the id of the room in DB
--------------------------
-Return value
-    int : boolean, 1 if the rest of the day is available, 0 if not
-*/
-int isRestDayAvailable( Date date, int time_slot_int, char *idRoom ){
-  char dateString[16];
-  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
-  char time_slot[16] = "";
-
-  sprintf( dateString, "%d-%d-%d", date.year, date.month, date.day );
-  strcpy(time_slot, time_slots[ 1^time_slot_int ] ); // 1 XOR time_slot -> 1^0 = 1 and 1^1 = 0
-
-  return isTimeSlotAvailable(time_slot, dateString, idRoom);
-}
-
-
-/*
------------------------------------------------------------------------------------------------------------
-Function : isTimeSlotAvailable
--------------------------
-select in DB
--------------------------
- char *time_slot : string of the time slot
- char *date : date with the sql format yyyy-[1-12]-[1-31]
- char *idRoom : string of the id of the room in DB
--------------------------
-Return value
-    int : 1 or -1. 1 if the rest of the time slot of this room at this date is available,  AND -1 if not !!!
-*/
-int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
-  int isAvailable;
-  MYSQL *conn = connect_db();
-  MYSQL_RES *result;
-  MYSQL_ROW row;
-  char request[512];
-
-  // return "1" if a room is available at a date and a time slot, "-1" if not
-  sprintf(request, "SELECT IF(\
-  	(SELECT COUNT(time_slot) FROM BOOKING\
-  	WHERE room = %s\
-  	AND date_booking = '%s'\
-  	AND time_slot = '%s'\
-  	AND state = 1) > 0, -1, 1\
-  ) AS Q", idRoom, date, time_slot );
-
-  result = query(conn, request);
-
-  if( (row = mysql_fetch_row(result)) != NULL )
-    isAvailable = atoi(*row);
-  else{
-    printf("Error mysql: fetch == NULL in isTimeSlotAvailable\n");
-    exit(0);
-  }
-
-  mysql_free_result(result);
-  mysql_close(conn);
-  return isAvailable;
-}
 
 
 // PLACE ROOM
@@ -980,20 +477,6 @@ void onTimeSlotPlanningChanged(GtkWidget *widget, gpointer data){
 
 /*
 -----------------------------------------------------------------------------------------------------------
-Function : background_color_if_sensitive
--------------------------
-if the widget is clickable then call the function background_color to the color of the widget.
--------------------------
-GtkWidget *widget: widget to change.
-char *color: string of the code color in hexadecimal like "#RRGGBB"
-*/
-void background_color_if_sensitive(GtkWidget *widget, char* color){
-  if( (int)gtk_widget_is_sensitive (widget) )
-    background_color( widget, color );
-}
-
-/*
------------------------------------------------------------------------------------------------------------
 Function : open_drink_window_2
 -------------------------
 Open the window of the choice of having a drink or not, after planning window.
@@ -1110,6 +593,8 @@ unsigned int getPriceRoom(int idRoom){
 
   return price;
 }
+
+
 /*
 -----------------------------------------------------------------------------------------------------------
 Function : reserveRoomByPlanning
@@ -1136,7 +621,29 @@ void reserveRoomByPlanning(Booking *b){
   b = NULL;
 }
 
+
 // STYLE
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : background_color
+-------------------------
+Change the back ground color of a widget
+-------------------------
+GtkWidget *widget : the widget to change
+char *color : color in hexadecimal like #RRGGBB
+*/
+void background_color( GtkWidget *widget, char *color ){
+  GtkCssProvider * cssProvider = gtk_css_provider_new();    //store the css
+
+  char css[64] = "* { background-image:none; background-color:";
+  strcat( strcat( css , color ), ";}" );
+
+  gtk_css_provider_load_from_data(cssProvider, css,-1,NULL);
+  GtkStyleContext * context = gtk_widget_get_style_context(widget);   //manage CSS provider
+  gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(cssProvider),GTK_STYLE_PROVIDER_PRIORITY_USER);
+}
+
+
 /*
 -----------------------------------------------------------------------------------------------------------
 Function : stylePlanningRoom
@@ -1156,6 +663,20 @@ void stylePlanningRoom(Session *session){
   background_color(locationContainer, "#ffffff" );
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : background_color_if_sensitive
+-------------------------
+if the widget is clickable then call the function background_color to the color of the widget.
+-------------------------
+GtkWidget *widget: widget to change.
+char *color: string of the code color in hexadecimal like "#RRGGBB"
+*/
+void background_color_if_sensitive(GtkWidget *widget, char* color){
+  if( (int)gtk_widget_is_sensitive (widget) )
+    background_color( widget, color );
+}
 
 // ----------------------
 

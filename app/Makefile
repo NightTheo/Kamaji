@@ -7,7 +7,11 @@ CFLAGS =  -rdynamic `pkg-config --cflags gtk+-3.0`
 LIBS = `pkg-config --libs gtk+-3.0` -l mysqlclient
 
 #C files
-CFILES = src/main.c src/navigation.c src/insertDataGtk.c  src/config_mysql.c
+CFILES = src/main.c \
+				 src/navigation.c \
+				 src/insertDataGtk.c \
+				 src/config_mysql.c \
+				 src/search.c \
 
 #Executable
 EXE = exe/$(APPNAME)
