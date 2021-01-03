@@ -77,6 +77,23 @@ delReservation *addDelReservation(Session *session, uint32_t id){
 
 /*
 -----------------------------------------------------------------------------------------------------------
+Function : freeDelReservations
+-------------------------
+Free all the nodes of the linked list of Reservation
+-------------------------
+delReservation **start : address of the pointer of the last node added.
+*/
+void freeDelReservations(delReservation **start){
+  while(*start != NULL){
+    delReservation *remove = *start;
+    *start = (*start)->next;
+    free(remove);
+  }
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
 Function : deleteReservation
 -------------------------
 Open a dialog window, to be sure if the user wants to delete the booking.

@@ -186,9 +186,11 @@ typedef struct Session{
 // INCLUDE
 #include "../inc/config_mysql.h"
 #include "../inc/navigation.h"
-#include "../inc/insertDataGtk.h"
-#include "../inc/search.h"
+#include "../inc/planning.h"
 #include "../inc/reservations.h"
+#include "../inc/search.h"
+
+
 
 
 

@@ -11,6 +11,76 @@ connet the signals for the navigation between the windows
 
 
 // NAVIGATION
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : initSession
+-------------------------
+Allocates memory for the main variables used : session, search and calendar.
+Init the linked list of the reservations.
+-------------------------
+Return value
+  Session *session: the session created
+*/
+Session *initSession(){
+  Session *session;
+  Search *search;
+  Calendar *calendar;
+
+  session = malloc(sizeof(Session));
+  search = malloc(sizeof(Search));
+  calendar = malloc(sizeof(Calendar));
+  if( session == NULL || search == NULL || calendar == NULL)
+    exit(1);
+
+  search->startBooking = NULL;
+
+  session->search = search;
+  session->calendar = calendar;
+  session->nextReservation = NULL;
+
+  return session;
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : kamajiQuit
+-------------------------
+Free memory allocated for main variables search, calendar and session.
+Then quit the gtk loop.
+-------------------------
+GtkWidget *w : widget activated.
+Session *session : address of the struct Session
+*/
+void kamajiQuit(GtkWidget *w, gpointer data){
+  Session *session = data;
+  /*printf("Delete-event\n");
+  printf("Search : %p\n", session->search);
+  printf("Calendar : %p\n", session->calendar);*/
+  if( session->search != NULL ) free(session->search);
+  if( session->calendar != NULL ) free(session->calendar);
+  freeDelReservations(&session->nextReservation);
+  gtk_main_quit();
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : back
+-------------------------
+Back to the previous window.
+-------------------------
+GtkWidget *widget : widget activated.
+Session *session : address of the struct Session
+*/
+void back(GtkWidget *widget, gpointer data){
+  Session *session = data;
+  gtk_widget_destroy( GTK_WIDGET( session->window ) );
+  (*session->backFunction)(NULL, session);
+}
+
+
 /*
 -----------------------------------------------------------------------------------------------------------
 Function : open_home_window

@@ -6,6 +6,7 @@ headers of the src/reservations.c file
 
 
 void open_reservations_window(GtkWidget *widget, gpointer data);
+void freeDelReservations(delReservation **start);
 delReservation *addDelReservation(Session *session, uint32_t id);
 MysqlSelect findReservationsInDB();
 ReservationBox newReservation();
