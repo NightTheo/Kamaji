@@ -31,7 +31,7 @@ void setRoomInfo(Calendar *calendar);
 void updateButtonsPlanning( Calendar *calendar, struct tm *td);
 void showOrHidePlanningButton(int isAvailable, GtkWidget *button);
 void updateTimeSlotLabels(Calendar *c);
-void setDateReservation(char *dateSQL, GtkLabel *label);
+
 
 void checkDataPlaceRoom(GtkWidget *widget, gpointer data);
 

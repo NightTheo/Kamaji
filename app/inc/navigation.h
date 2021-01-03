@@ -13,21 +13,19 @@ void background_color( GtkWidget *widget, char *color );
 
 //NAVIGATION
 void open_home_window(GtkWidget *widget, gpointer data);
-void open_place_room_window(GtkWidget *widget, gpointer data);
+
 void open_planning_window(GtkWidget *widget,gpointer data);
 void open_drink_window_2(GtkWidget *Widget,gpointer data);
 void open_reservations_window2(GtkWidget *widget,gpointer data);
-void editReservation(GtkWidget *widget,gpointer data);
 
 
 // GET DATA
 
 Booking *prepareBookingPlanning(Calendar c);
-void getIdRoom(GtkWidget *widget, Session *session);
 void getCalendarWidgets(Calendar *c, GtkBuilder *builder);
 void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data);
 unsigned int getPriceRoom(int idRoom);
-MysqlSelect findReservationsInDB();
+
 
 
 // SET DATA
