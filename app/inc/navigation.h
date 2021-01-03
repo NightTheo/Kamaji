@@ -14,27 +14,6 @@ void background_color( GtkWidget *widget, char *color );
 //NAVIGATION
 void open_home_window(GtkWidget *widget, gpointer data);
 
-void open_planning_window(GtkWidget *widget,gpointer data);
-void open_drink_window_2(GtkWidget *Widget,gpointer data);
-void open_reservations_window2(GtkWidget *widget,gpointer data);
-
-
-// GET DATA
-
-Booking *prepareBookingPlanning(Calendar c);
-void getCalendarWidgets(Calendar *c, GtkBuilder *builder);
-void getPlanningDrinksCheckbox(GtkWidget *widget, gpointer data);
-unsigned int getPriceRoom(int idRoom);
-
-
-
-// SET DATA
-
-void chooseTimeSlot(GtkWidget *widget, Calendar *calendar);
-void reserveRoomByPlanning(Booking *b);
-void updateTimeSlotComboPlanning(Calendar *calendar);
-void onTimeSlotPlanningChanged(GtkWidget *widget, gpointer data);
-
 
 
 
