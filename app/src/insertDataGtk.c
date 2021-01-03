@@ -61,6 +61,7 @@ void kamajiQuit(GtkWidget *w, gpointer data){
   gtk_main_quit();
 }
 
+
 /*
 -----------------------------------------------------------------------------------------------------------
 Function : back
