@@ -20,6 +20,7 @@ EXE = exe/$(APPNAME)
 
 kamaji:
 	gcc $(CFLAGS) -o $(EXE) $(CFILES) $(LIBS)
+	$(EXE)
 
 mysql:
 	sudo chown -R _mysql:mysql /usr/local/var/mysql
