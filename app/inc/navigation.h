@@ -22,7 +22,7 @@ void editReservation(GtkWidget *widget,gpointer data);
 
 
 // GET DATA
-int *getRoomsEquipment(char *idRoom);
+
 Booking *prepareBookingPlanning(Calendar c);
 void getIdRoom(GtkWidget *widget, Session *session);
 void getCalendarWidgets(Calendar *c, GtkBuilder *builder);

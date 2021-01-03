@@ -425,6 +425,127 @@ void displayDataRoom(RoomGtkBox room, MYSQL_ROW row, Session *session){
 }
 
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayRoomEquipments
+-------------------------
+Display the equipments in a room. Get the equipments in the room by calling
+the function getRoomsEquipment, then show or hide the corresponding image.
+-------------------------
+GtkImage *equipments[4]: array of GtkImages* who represente the equipments.
+char *idRoom: identifiant of room.
+*/
+void displayRoomEquipments(GtkImage *equipments[4], char *idRoom){
+
+  int *equipmentsArray = getRoomsEquipment(idRoom);
+  for(int i = 0; i < 4; i++){
+    if(equipmentsArray[i])
+      gtk_widget_show ( GTK_WIDGET( equipments[i] ) );
+    else
+      gtk_widget_hide ( GTK_WIDGET( equipments[i] ) );
+  }
+
+  free(equipmentsArray);
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getRoomsEquipment
+-------------------------
+Select in DB the equipments a room has, then fill an int array : 1 if the equipment is present, 0 if not.
+-------------------------
+char *idRoom : id of the table ROOM
+-------------------------
+Return value
+  int *equipments : address of the array created.
+*/
+int *getRoomsEquipment(char *idRoom){
+  // equipment
+  MYSQL *conn = connect_db();
+  MYSQL_ROW row;
+  MYSQL_RES *result;
+  char request[1024];
+  int *equipments;
+
+  equipments = malloc( sizeof(int) * 4 );
+  if(equipments == NULL) exit(1);
+  for(int i = 0; i < 4; i++) equipments[i] = 0;
+
+  sprintf(request, "SELECT roe.equipment FROM _room_owns_equipment as roe \
+  INNER JOIN EQUIPMENT as E ON roe.equipment = E.id \
+  WHERE E.state = 1 AND room = %s ;", idRoom);
+
+  result = query(conn, request);
+  while ((row = mysql_fetch_row(result)) != NULL){
+    equipments[ atoi(*row)-1 ] = 1;
+  }
+
+  mysql_free_result(result);
+  mysql_close(conn);
+
+  return equipments;
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayTimeSlotComboBox
+-------------------------
+Fill of room avaible can choose the time of your reservation (morning, afternoon or all day).
+It only offers the rooms available at such a time of day.
+-------------------------
+RoomGtkBox room: struct of the room with all the widgets.
+char *idRoom: identifiant of room.
+Search *search: address of the struct Search.
+*/
+void displayTimeSlotComboBox(RoomGtkBox room, char *idRoom, Search *search){
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char idTimeSlot[4];
+  sprintf( idTimeSlot, "%d", search->time_slot);
+
+  if( search->time_slot != 2 && isRestDayAvailable( search->date, search->time_slot, idRoom ) == 1 ){ // available the rest of the day
+    gtk_combo_box_set_active_id (GTK_COMBO_BOX(room.bookingTimeSlotComboBox), idTimeSlot );
+    gtk_widget_show( GTK_WIDGET( room.bookingTimeSlotComboBox ) );
+  }else if(search->time_slot != 2){
+      gtk_combo_box_text_remove_all (room.bookingTimeSlotComboBox);
+      gtk_combo_box_text_append(room.bookingTimeSlotComboBox, idTimeSlot, time_slots[search->time_slot] );
+      gtk_combo_box_set_active_id (GTK_COMBO_BOX(room.bookingTimeSlotComboBox), idTimeSlot );
+    }
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : displayTimeSlotLabel
+-------------------------
+Display the time slot of availability of a room, if it is all the day, the time slot displayed is "8h - 20h",
+else it is "8h - 14h or "14h - 20h".
+For that, call the function isRestDayAvailable then set the text in consequence
+-------------------------
+GtkLabel *label : time slot label
+char *idRoom : id of the table ROOM
+Date date : date searched
+int time_slot : time slot searched
+char *idRoom : id of the table ROOM
+*/
+void displayTimeSlotLabel(GtkLabel *label, char *idRoom, Date date, int time_slot){
+  char time_slots[3][16]= {"8h - 14h", "14h - 20h", "8h - 20h"};
+  char idTimeSlot[4];
+  char timeSlot[16];
+  sprintf( idTimeSlot, "%d", time_slot);
+
+  if( time_slot == 2 || isRestDayAvailable( date, time_slot, idRoom ) == 1 )
+    strcpy( timeSlot, time_slots[2] );
+  else
+    strcpy( timeSlot, time_slots[ time_slot ] );
+
+  gtk_label_set_text( label, timeSlot );
+}
+
+
+
 /*
 -----------------------------------------------------------------------------------------------------------
 Function : hasRequiredEquipments
@@ -754,6 +875,99 @@ int isTimeSlotAvailable(char *time_slot, char *date, char *idRoom){
 }
 
 
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: focusDateCalendar
+-------------------------
+In new res window, set the selected date to tomorow
+-------------------------
+Calendar *calendar: address of the struct calendar.
+*/
+void focusDateCalendar(GtkCalendar *calendar){
+  time_t now;
+  struct tm *td;
+  int *tomorrow;
+
+  time( &now );
+  td = localtime( &now );
+  tomorrow = moveInCalendar(td->tm_year+1900, td->tm_mon, td->tm_mday,1);
+  gtk_calendar_select_month (calendar, tomorrow[1], tomorrow[0] );
+  gtk_calendar_select_day ( calendar, tomorrow[2] );
+
+  free(tomorrow);
+  tomorrow = NULL;
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: checkDataInputPlace
+-------------------------
+Check if a place is selected in the new res window.
+-------------------------
+GtkComboBox *place : combobox of the place selected
+-------------------------
+Return value
+  uint8_t : boolean if the place is ok
+*/
+uint8_t checkDataInputPlace(GtkComboBox *place){
+    uint32_t id;
+
+    if( gtk_combo_box_get_active_id(place) != NULL ){
+      id = (uint32_t)atoi( gtk_combo_box_get_active_id(place) );
+      return  id > 0;
+    }
+  return 0;
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: checkDataCalendar
+-------------------------
+Check if the date selected in the calendar of new res window is not passed.
+-------------------------
+GtkCalendar *calendar : calendar in new res window
+-------------------------
+Return value
+  uint8_t : boolean if the date is ok
+*/
+uint8_t checkDataCalendar(GtkCalendar *calendar){
+  Date d;
+  time_t now;
+  struct tm *td;
+
+  gtk_calendar_get_date ( calendar, (guint *)&d.year, (guint *)&d.month, (guint *)&d.day);
+  time( &now );
+  td = localtime( &now );
+
+  if( d.year >= td->tm_year + 1900 )
+    if( d.month >= td->tm_mon )
+      if( d.day > td->tm_mday ) return 1;
+      else return 0;
+    else return 0;
+  else return 0;
+}
+
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function: checkDataNewRes
+-------------------------
+Hide or show the date avaible for new reservation.
+-------------------------
+GtkWidget *widget: widget activated.
+*/
+void checkDataNewRes(GtkWidget *widget, gpointer data){
+  GtkWidget **check = data;
+  /*printf("place: %u\n",checkDataInputPlace( GTK_COMBO_BOX(check[1]) ) );
+  printf("calendar: %u\n",checkDataCalendar( GTK_CALENDAR(check[2] )));*/
+
+  if( checkDataInputPlace( GTK_COMBO_BOX(check[1]) ) && checkDataCalendar( GTK_CALENDAR(check[2] )) )
+    gtk_widget_set_sensitive( GTK_WIDGET(check[0]), TRUE );
+  else
+    gtk_widget_set_sensitive( GTK_WIDGET(check[0]), FALSE );
+}
 
 
 //
