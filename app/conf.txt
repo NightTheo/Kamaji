@@ -11,6 +11,7 @@ dbname : kamajiv2
 server : localhost
 login : root
 password :
+port : 3306
 
 [style]
 backgroud-color : #333333

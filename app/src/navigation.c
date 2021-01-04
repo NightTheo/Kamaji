@@ -150,6 +150,7 @@ Session *session : address of the struct Session
 void newWindow(char* file, char* idWindow, Session *session){
   GtkBuilder      *builder;
   GtkWidget       *window;
+  char *color;
 
   builder = gtk_builder_new_from_file(file);
   window = GTK_WIDGET(gtk_builder_get_object(builder, idWindow));
@@ -159,7 +160,8 @@ void newWindow(char* file, char* idWindow, Session *session){
   session->window = GTK_WINDOW(window);
 
   //Background color
-  background_color(window, "#444444" );
+  color = getConf("style", "backgroud-color") ;
+  background_color(window, color );
 
   gtk_widget_show_all(window);
 }

@@ -17,12 +17,13 @@ MYSQL* connect_db(){
   char *server = getConf("database","server");
   char *user = getConf("database","login");
   char *password = getConf("database","password");
+  int port = getConfInt("database","port");
 
   conn = mysql_init(NULL);
 
   /* Connect to database */
   if (!mysql_real_connect(conn, server,
-      user, password, dbname, 8889, NULL, 0)) {
+      user, password, dbname, port, NULL, 0)) {
      fprintf(stderr, "%s\n", mysql_error(conn));
      exit(1); //error
   }
