@@ -15,9 +15,12 @@ password :
 [style]
 backgroud-color : #333333
 font-family : arial
-title-font-size : 24
-text-font-size : 12
+title-font-size : 24px
+text-font-size : 12px
 border-radius : 6px
+
+[error]
+
 
 [time]
 week-days-alias : {"lun","mar","mer","jeu","ven"}

@@ -23,8 +23,8 @@ char *getConf(char *group, char* property){
   char name[256];
   FILE *fp = fopen(CONF_FILE, "rt");
   char *value = malloc( sizeof(char) * 256 );
-  if(fp == NULL) exit(1);
-  if(value == NULL) {
+  if(value == NULL) exit(1);
+  if(fp == NULL) {
     printf("\n\n/!\\Conf file \"%s\" not found ! ~T_T~\n\n", CONF_FILE);
     exit(1);
   }
@@ -48,6 +48,36 @@ char *getConf(char *group, char* property){
   exit(0);
 }
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+Function : getConfInt
+-------------------------
+Use getConf but return an int
+-------------------------
+ char *group : group of properties, in the conf file is like [group]
+ char* property : name of the desired property, in the conf file is like name : value
+ -------------------------
+ Return value
+  int intConf : the property as an int
+*/
+int getConfInt(char *group, char* property){
+  int intConf;
+  char *stringConf;
+  char *error;
+
+  stringConf = getConf(group, property);
+  intConf = (int)strtol(stringConf, &error, 10 ); // atoi returns 0 when an error append, str to long allows to distinguish this case
+
+  if( error == stringConf ){
+    printf("\n\n/!\\ Conf [%s]%s is not an int ! ~T_T~\n\n", group, property);
+    free(stringConf);
+    exit(0);
+  }
+
+  free(stringConf);
+  return intConf;
+}
 
 /*
 -----------------------------------------------------------------------------------------------------------
