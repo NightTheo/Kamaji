@@ -1,10 +1,19 @@
+#####################################
+#   Configuration file of Kamaji    #
+#####################################
+#
+# To add a group of properties, write as "[groupname]"
+# To add a property, write as "name : value"
+####################################
+
 [database]
 dbname : kamajiv2
+server : localhost
 login : root
 password :
 
 [style]
-backgroud-color : #444444
+backgroud-color : #333333
 font-family : arial
 title-font-size : 24
 text-font-size : 12

@@ -13,19 +13,21 @@ _________________
 
 MYSQL* connect_db(){
   MYSQL *conn;
-  char *server = "localhost";
-  char *user = "root";
-  char *password = "";
-  char *database = "kamajiv2";
+  char *dbname = getConf("database","dbname");
+  char *server = getConf("database","server");
+  char *user = getConf("database","login");
+  char *password = getConf("database","password");
 
   conn = mysql_init(NULL);
 
   /* Connect to database */
   if (!mysql_real_connect(conn, server,
-      user, password, database, 8889, NULL, 0)) {
+      user, password, dbname, 8889, NULL, 0)) {
      fprintf(stderr, "%s\n", mysql_error(conn));
      exit(1); //error
   }
+
+  free(dbname); free(server); free(user); free(password);
   return conn;
 }
 

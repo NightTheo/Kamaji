@@ -19,23 +19,33 @@ Get the value of a conf property
   char *conf : the property as a string
 */
 char *getConf(char *group, char* property){
-  char line[512];
+  char line[256];
+  char name[256];
   FILE *fp = fopen(CONF_FILE, "rt");
-  char *conf = malloc( sizeof(char) * 512 );
+  char *value = malloc( sizeof(char) * 256 );
   if(fp == NULL) exit(1);
-  if(conf == NULL) {
-    printf("%s K.O\n", CONF_FILE);
+  if(value == NULL) {
+    printf("\n\n/!\\Conf file \"%s\" not found ! ~T_T~\n\n", CONF_FILE);
     exit(1);
   }
 
+  *value = '\0';
   while ( fgets(line, 512, fp), !feof(fp)) {
         trim(line);
+        if( *line == '#' ) continue; // # is a comment line
         if( isPropertyGroup(line, group) ){
-
+          while (fgets(line, 512, fp), line[0] != '[' && !feof(fp)) { // while not next group or end file
+            trim(line);
+            if( sscanf(line, "%s : %s", name, value) == 2 ||  line[ strlen(line)-1 ] == ':') // Ends by ':' means empty property
+              if( strcmp(name, property) == 0) return value;
+            *value = '\0';
+          }
+          break;
         }
     }
 
-  return conf;
+  printf("\n\n/!\\ Conf [%s]%s not found ! ~T_T~\n\n", group, property);
+  exit(0);
 }
 
 
